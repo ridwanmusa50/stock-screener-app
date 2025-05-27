@@ -1,19 +1,54 @@
+##############################################################################################################
+##########                                   Versions                                               ##########
+##############################################################################################################
+
 [versions]
 agp = "8.10.0"
-kotlin = "2.0.21"
+kotlin = "2.1.10"
 coreKtx = "1.16.0"
+lifecycleRuntimeKtx = "2.9.0"
+activityCompose = "1.10.1"
+composeBom = "2025.05.01"
+constraintCompose = "1.1.1"
+
+# Coroutine
+caroutine = "1.10.1"
+
+# Hilt
+hilt = "2.55"
+hiltNavigationCompose = "1.2.0"
+hiltNavigationFragment = "1.2.0"
+
+# KSP
+ksp = "2.1.10-1.0.30"
+
+# Navigation
+navigationCompose = "2.9.0"
+
+# Testing
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.9.0"
-activityCompose = "1.10.1"
-composeBom = "2024.09.00"
+
+# Coil
+coilCompose = "2.6.0"
+coilGif = "2.6.0"
+
+# Serialization
+serializationJson = "1.8.1"
+
+
+
+##############################################################################################################
+##########                                   Libraries                                              ##########
+##############################################################################################################
 
 [libraries]
+
+# =====================================================
+# AndroidX + Compose
+# =====================================================
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -24,9 +59,61 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintCompose" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
+# =====================================================
+# Coroutines
+# =====================================================
+jetbrains-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "caroutine" }
+jetbrains-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "caroutine" }
+
+# =====================================================
+# Serialization
+# =====================================================
+jetbrains-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationJson" }
+
+# =====================================================
+# Hilt - Dependency Injection
+# =====================================================
+androidx-hilt-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-hilt-hilt-navigation-fragment = { group = "androidx.hilt", name = "hilt-navigation-fragment", version.ref = "hiltNavigationFragment" }
+google-dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+google-dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+# =====================================================
+# Testing
+# =====================================================
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+# =====================================================
+# Other Libraries
+# =====================================================
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
+coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coilGif" }
+
+
+##############################################################################################################
+##########                                    Plugins                                               ##########
+##############################################################################################################
 
 [plugins]
+
+# =====================================================
+# Android & Kotlin
+# =====================================================
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
+# =====================================================
+# KSP
+# =====================================================
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+# =====================================================
+# Hilt
+# =====================================================
+google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
