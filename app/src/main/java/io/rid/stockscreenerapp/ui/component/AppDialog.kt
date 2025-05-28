@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,37 +88,41 @@ fun AppNoInternetDialog(isShowingDialog : Boolean = false) {
         enter = alertDialogFullVerticalEnterTransition(),
         exit = alertDialogVerticalExitTransition()
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Companion.White),
-            contentAlignment = Alignment.Companion.Center
+            horizontalAlignment = Alignment.Companion.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier.wrapContentHeight()
-                    .padding(horizontal = Dimen.Spacing.spacing40),
-                horizontalAlignment = Alignment.Companion.CenterHorizontally
-            ) {
-                AppLoadImage(imageResId = R.drawable.ic_no_internet)
+            AppLoadImage(
+                imageResId = R.drawable.ic_no_internet,
+                modifier = Modifier.padding(horizontal = Dimen.Spacing.spacing80)
+            )
 
-                AppTxt(
-                    txtResId = R.string.internet_popup_title,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = Dimen.Spacing.spacing40),
-                    style = AppTypography.titleLarge,
-                    txtAlign = TextAlign.Companion.Center
-                )
+            AppTxt(
+                txtResId = R.string.internet_popup_title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = Dimen.Spacing.spacing40, end = Dimen.Spacing.spacing40,
+                        top = Dimen.Spacing.spacing40
+                    ),
+                style = AppTypography.titleLarge,
+                txtAlign = TextAlign.Companion.Center
+            )
 
-                AppTxt(
-                    txtResId = R.string.internet_popup_des,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = Dimen.Spacing.spacing20),
-                    style = AppTypography.bodyMedium.copy(color = gray01100),
-                    txtAlign = TextAlign.Companion.Center
-                )
-            }
+            AppTxt(
+                txtResId = R.string.internet_popup_des,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = Dimen.Spacing.spacing40, end = Dimen.Spacing.spacing40,
+                        top = Dimen.Spacing.spacing20
+                    ),
+                style = AppTypography.bodyMedium.copy(color = gray01100),
+                txtAlign = TextAlign.Companion.Center
+            )
         }
     }
 }

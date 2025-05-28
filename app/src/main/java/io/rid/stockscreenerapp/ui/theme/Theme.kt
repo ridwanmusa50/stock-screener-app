@@ -9,12 +9,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 
 private val lightScheme = lightColorScheme(
-    primary = red01100,
-    onPrimary = Color.White,
-    primaryContainer = Color.White,
-    secondary = blue02100,
-    onSecondary = Color.White,
-    secondaryContainer = Color.White
+    primary = green01100,
+    onPrimary = black01100,
+    primaryContainer = black03100,
+    secondary = pink01100,
+    onSecondary = black01100,
+    secondaryContainer = black03100
 )
 
 @Composable
