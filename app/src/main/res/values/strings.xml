@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Stock Screener App</string>
+    <string name = "app_name">Stock Screener App</string>
+    <string name = "internet.popup_title">Oopps!</string>
+    <string name = "internet.popup_des">It seems something wrong with your internet connection. Please check your internet connection and try again.</string>
+    <string name = "general.cancel">Cancel</string>
+    <string name = "general.okay">Okay</string>
+    <string name = "logout">Logout</string>
+    <string name = "logout.popup_title">Are you sure want to log out?</string>
+    <string name = "placeholder.search_stock">Search for stock</string>
+    <string name = "server.generic_server_error">We are unable to process your request. Please try again.</string>
 </resources>
