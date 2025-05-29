@@ -3,7 +3,7 @@
 ##############################################################################################################
 
 [versions]
-kotlin = "2.1.21"
+kotlin = "2.1.10"
 coreKtx = "1.16.0"
 lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
@@ -16,13 +16,19 @@ caroutine = "1.10.1"
 # Gradle
 buildGradle = "8.9.3"
 
+# Retrofit
+retrofit = "2.11.0"
+
+# OkHttp
+okHttp = "5.0.0-alpha.14"
+
+# Gson
+gson = "2.12.1"
+
 # Hilt
 hilt = "2.55"
 hiltNavigationCompose = "1.2.0"
 hiltNavigationFragment = "1.2.0"
-
-# KSP
-ksp = "2.1.21-2.0.1"
 
 # Navigation
 navigationCompose = "2.9.0"
@@ -67,7 +73,21 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 # =====================================================
 # Gradle
 # =====================================================
-build-gradle = { group = "com.android.tools.build",  name = "gradle", version.ref = "buildGradle" }
+android-build-gradle = { group = "com.android.tools.build",  name = "gradle", version.ref = "buildGradle" }
+
+# =====================================================
+# Retrofit
+# =====================================================
+squareup-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+squareup-retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+squareup-retrofit-adapter-rxjava2 = { group = "com.squareup.retrofit2", name = "adapter-rxjava2", version.ref = "retrofit" }
+google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# =====================================================
+# OkHttp
+# =====================================================
+squareup-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okHttp" }
+squareup-okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okHttp" }
 
 # =====================================================
 # Coroutines
@@ -116,9 +136,9 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 # =====================================================
-# KSP
+# Kapt
 # =====================================================
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin-kapt = { id = "kotlin-kapt" }
 
 # =====================================================
 # Hilt

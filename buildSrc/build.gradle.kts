@@ -8,5 +8,5 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.build.gradle)
+    implementation(libs.android.build.gradle)
 }

@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.dagger.hilt.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -131,6 +131,24 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
 
     // =============================================================================================================
+    // Google
+    // =============================================================================================================
+    implementation(libs.google.gson)
+
+    // =============================================================================================================
+    // Retrofit
+    // =============================================================================================================
+    implementation(libs.squareup.retrofit)
+    implementation(libs.squareup.retrofit.converter.gson)
+    implementation(libs.squareup.retrofit.adapter.rxjava2)
+
+    // =============================================================================================================
+    // Okhttp
+    // =============================================================================================================
+    implementation(libs.squareup.okhttp)
+    implementation(libs.squareup.okhttp.logging.interceptor)
+
+    // =============================================================================================================
     // Kotlin Coroutines
     // =============================================================================================================
     implementation(libs.jetbrains.kotlinx.coroutines.android)
@@ -147,7 +165,7 @@ dependencies {
     implementation(libs.androidx.hilt.hilt.navigation.compose)
     implementation(libs.androidx.hilt.hilt.navigation.fragment)
     implementation(libs.google.dagger.hilt.android)
-    ksp(libs.google.dagger.hilt.compiler)
+    kapt(libs.google.dagger.hilt.compiler)
 
     // =============================================================================================================
     // Testing

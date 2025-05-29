@@ -2,7 +2,6 @@
 plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.ksp) apply false
 }
 
 buildscript {
@@ -13,7 +12,7 @@ buildscript {
     }
 
     dependencies {
-        classpath(libs.build.gradle)
+        classpath(libs.android.build.gradle)
     }
 }
 
