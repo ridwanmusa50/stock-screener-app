@@ -3,8 +3,7 @@
 ##############################################################################################################
 
 [versions]
-agp = "8.10.0"
-kotlin = "2.1.10"
+kotlin = "2.1.21"
 coreKtx = "1.16.0"
 lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
@@ -14,13 +13,16 @@ constraintCompose = "1.1.1"
 # Coroutine
 caroutine = "1.10.1"
 
+# Gradle
+buildGradle = "8.9.3"
+
 # Hilt
 hilt = "2.55"
 hiltNavigationCompose = "1.2.0"
 hiltNavigationFragment = "1.2.0"
 
 # KSP
-ksp = "2.1.10-1.0.30"
+ksp = "2.1.21-2.0.1"
 
 # Navigation
 navigationCompose = "2.9.0"
@@ -61,6 +63,11 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintCompose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
+# =====================================================
+# Gradle
+# =====================================================
+build-gradle = { group = "com.android.tools.build",  name = "gradle", version.ref = "buildGradle" }
 
 # =====================================================
 # Coroutines
@@ -104,7 +111,7 @@ coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coilGif" }
 # =====================================================
 # Android & Kotlin
 # =====================================================
-android-application = { id = "com.android.application", version.ref = "agp" }
+android-application = { id = "com.android.application" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
