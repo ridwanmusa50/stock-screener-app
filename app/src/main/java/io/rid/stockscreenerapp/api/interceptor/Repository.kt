@@ -1,12 +1,18 @@
 package io.rid.stockscreenerapp.api.interceptor
 
+import android.content.Context
 import android.util.Log
 import io.rid.stockscreenerapp.api.ApiService
 import io.rid.stockscreenerapp.network.ConnectionState
 import io.rid.stockscreenerapp.network.NetworkMonitor
 import io.rid.stockscreenerapp.ui.util.Const
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.net.HttpURLConnection
@@ -17,7 +23,7 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
     // region Repository Setup
     // =============================================================================================================
 
-    suspend fun <T> callApiRepo(call: suspend ApiService.() -> Response<T>): ApiResponse<T> {
+    suspend fun <T> callApi(call: suspend ApiService.() -> Response<T>): ApiResponse<T> {
         var code = -1
         var errBodyStr = ""
 
@@ -106,6 +112,40 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
 
     // region APIs
     // =============================================================================================================
+
+    suspend fun getStocks(context: Context) {
+        try {
+            val response = apiService.getStocks("LISTING_STATUS")
+            if (response.isSuccessful && response.body() != null) {
+                val savedFile = saveCsvToFile(context, response.body()!!, "stock_list.csv")
+                savedFile?.let {
+                    Log.d("CSV", "CSV saved at: ${it.absolutePath}")
+                }
+            } else {
+                Log.e("CSV", "Failed to fetch CSV: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e("CSV", "Error during API call", e)
+        }
+    }
+
+    private suspend fun saveCsvToFile(context: Context, responseBody: ResponseBody, fileName: String): File? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val file = File(context.filesDir, fileName)
+                responseBody.byteStream().use { input ->
+                    FileOutputStream(file).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                file
+            } catch (e: IOException) {
+                Log.e("CSV_SAVE", "Error saving CSV file", e)
+                null
+            }
+        }
+    }
+
 
     // endregion ===================================================================================================
 

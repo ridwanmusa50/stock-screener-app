@@ -111,7 +111,8 @@ object Dimen {
 
     // Component with specific width or height
     object WidthHeight {
-
+        val tabIconDefault = 24.dp
+        val tabIconExpanded = 28.dp
     }
 
 }

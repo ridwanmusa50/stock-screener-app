@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -25,7 +26,8 @@ class ApiServiceBuilder @Inject constructor(context: Context) {
     private val builder: Retrofit.Builder = Retrofit.Builder()
         .baseUrl(BuildConfig.BASE_API_URL)
         .client(createOkHttpClient().build())
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(ScalarsConverterFactory.create()) // To handle non-Json response: plain strings, CSVs, etc.
+        .addConverterFactory(GsonConverterFactory.create()) // To handle JSON response
         .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
 
     fun build(): Retrofit {
