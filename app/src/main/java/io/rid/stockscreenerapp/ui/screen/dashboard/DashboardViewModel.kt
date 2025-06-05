@@ -88,7 +88,7 @@ class DashboardViewModel @Inject constructor(
             when (val result = repository.filterStocks(query)) {
                 is ApiResponse.Success -> {
                     val filteredStock = result.data.filteredResults
-                    val stocks = if (filteredStock?.isNotEmpty() == true) {
+                    val stocks = if (filteredStock != null && filteredStock.isNotEmpty()) {
                         filteredStock.map { remoteStock ->
                             val localStock = localStocks.value.firstOrNull { it.symbol == remoteStock.symbol }
                             Stock(remoteStock.symbol, remoteStock.name, localStock?.isStarred == true)
@@ -135,9 +135,13 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun filterFromListingStock(query: String): List<Stock> {
-        return _uiState.value.stocks.filter {
-            it.symbol.contains(query, ignoreCase = true)
-        }.sortedBy { it.symbol }
+        return if (query.isEmpty()) {
+            localStocks.value
+        } else {
+            localStocks.value.filter {
+                it.symbol.contains(query, ignoreCase = true)
+            }.sortedBy { it.symbol }
+        }
     }
 
 }
