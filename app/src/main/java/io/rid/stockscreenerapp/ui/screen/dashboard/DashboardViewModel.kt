@@ -9,20 +9,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.rid.stockscreenerapp.R
 import io.rid.stockscreenerapp.api.ApiResponse
 import io.rid.stockscreenerapp.api.Repository
-import io.rid.stockscreenerapp.data.ListingStock
-import io.rid.stockscreenerapp.data.Stocks
+import io.rid.stockscreenerapp.data.Stock
+import io.rid.stockscreenerapp.database.Dao
 import io.rid.stockscreenerapp.ui.util.parseStockCsv
-import io.rid.stockscreenerapp.ui.util.saveCsv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
-
-const val FILE_NAME = "stocks.csv"
 
 @Stable
 enum class DashboardTabs(val titleResId: Int, val iconResId: Int) {
@@ -33,7 +29,8 @@ enum class DashboardTabs(val titleResId: Int, val iconResId: Int) {
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val repository: Repository,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val dao: Dao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -46,21 +43,28 @@ class DashboardViewModel @Inject constructor(
             val result = repository.getStocks()
             val stocks = when (result) {
                 is ApiResponse.Success -> {
-                    val parsed = parseStockCsv(result.data.toString())
+                    val csvContent = result.data.string()
+                    val parsed = parseStockCsv(csvContent)
+
                     if (parsed.isNotEmpty()) {
-                        context.saveCsv(result.data, context.getExternalFilesDir(null)!!, FILE_NAME)
-                        parsed
+                        val stocks = parsed.map { stock ->
+                            Stock(stock.symbol, stock.name)
+                        }.sortedBy { stock -> stock.symbol }
+
+                        dao.insertStocks(stocks)
+                        stocks
                     } else {
-                        loadCachedStocks()
+                        loadStockFromRoomDb()
                     }
                 }
-                is ApiResponse.Err -> loadCachedStocks()
+
+                is ApiResponse.Err -> loadStockFromRoomDb()
             }
 
             _uiState.update {
                 it.copy(
                     isLoading = false,
-                    stocks = stocks?.map { s -> Stocks(s.symbol, s.name) }?.sortedBy { s -> s.symbol } ?: emptyList(),
+                    stocks = stocks ?: emptyList(),
                     err = if (stocks == null) result as? ApiResponse.Err else null
                 )
             }
@@ -73,7 +77,7 @@ class DashboardViewModel @Inject constructor(
                 is ApiResponse.Success -> {
                     val stocks = if (result.data.filteredResults.isNotEmpty()) {
                         result.data.filteredResults
-                            .map { Stocks(it.symbol, it.name) }
+                            .map { Stock(it.symbol, it.name) }
                             .sortedBy { it.symbol }
                     } else {
                         filterFromListingStock(query)
@@ -88,16 +92,11 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private fun loadCachedStocks(): List<ListingStock>? {
-        val cachedFile = File(context.getExternalFilesDir(null), FILE_NAME)
-        return if (cachedFile.exists()) {
-            parseStockCsv(cachedFile.readText()).takeIf { it.isNotEmpty() }
-        } else {
-            null
-        }
+    private suspend fun loadStockFromRoomDb(): List<Stock>? {
+        return dao.getStocks()
     }
 
-    private fun filterFromListingStock(query: String): List<Stocks> {
+    private fun filterFromListingStock(query: String): List<Stock> {
         return _uiState.value.stocks.filter {
             it.symbol.contains(query, ignoreCase = true)
         }.sortedBy { it.symbol }

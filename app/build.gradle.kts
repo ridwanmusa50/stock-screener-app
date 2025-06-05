@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.google.dagger.hilt.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -168,6 +169,13 @@ dependencies {
     implementation(libs.google.dagger.hilt.android)
     debugImplementation(libs.androidx.ui.tooling)
     kapt(libs.google.dagger.hilt.compiler)
+
+    // =============================================================================================================
+    // Room Database
+    // =============================================================================================================
+    implementation(libs.androidx.room.room.ktx)
+    implementation(libs.androidx.room.room.runtime)
+    ksp(libs.androidx.room.room.compiler)
 
     // =============================================================================================================
     // Testing

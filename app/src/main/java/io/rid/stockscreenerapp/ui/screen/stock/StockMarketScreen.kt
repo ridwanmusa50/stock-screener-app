@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,7 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -34,7 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.rid.stockscreenerapp.R
-import io.rid.stockscreenerapp.data.Stocks
+import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.ui.component.AppImageBtn
 import io.rid.stockscreenerapp.ui.component.AppOutlinedTxtField
 import io.rid.stockscreenerapp.ui.component.AppTxt
@@ -108,7 +106,7 @@ private fun SearchBar(query: String, onQueryChanged: (String) -> Unit) {
 private fun StockList(
     uiState: DashboardUiState,
     onRefresh: () -> Unit,
-    onStockSelected: (Stocks) -> Unit
+    onStockSelected: (Stock) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -126,7 +124,7 @@ private fun StockList(
 }
 
 @Composable
-private fun StockMarket(stock: Stocks, onStockSelected: (Stocks) -> Unit) {
+private fun StockMarket(stock: Stock, onStockSelected: (Stock) -> Unit) {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
