@@ -19,7 +19,6 @@ import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
@@ -37,7 +36,6 @@ import io.rid.stockscreenerapp.ui.screen.watchlist.WatchlistScreen
 import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
 import io.rid.stockscreenerapp.ui.theme.fullRoundedCornerShape
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -53,10 +51,11 @@ fun DashboardScreen() {
 
     DashboardContent(
         uiState = uiState,
-        dashboardViewModel = dashboardViewModel,
         pagerState = pagerState,
-        coroutineScope = coroutineScope,
-        tabs = tabs
+        tabs = tabs,
+        onTabSelected = { index -> coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+        onSearch = dashboardViewModel::filterStocks,
+        onRefresh = dashboardViewModel::fetchStocks
     )
 }
 
@@ -64,10 +63,11 @@ fun DashboardScreen() {
 @Composable
 private fun DashboardContent(
     uiState: DashboardUiState,
-    dashboardViewModel: DashboardViewModel,
     pagerState: PagerState,
-    coroutineScope: CoroutineScope,
-    tabs: List<DashboardTabs>
+    tabs: List<DashboardTabs>,
+    onTabSelected: (Int) -> Unit,
+    onSearch: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -79,15 +79,14 @@ private fun DashboardContent(
         DashboardTabs(
             tabs = tabs,
             selectedIndex = pagerState.currentPage,
-            onTabSelected = { index ->
-                coroutineScope.launch { pagerState.animateScrollToPage(index) }
-            }
+            onTabSelected = onTabSelected
         )
         DashboardPager(
             tabs = tabs,
+            pagerState = pagerState,
             uiState = uiState,
-            dashboardViewModel = dashboardViewModel,
-            pagerState = pagerState
+            onSearch = onSearch,
+            onRefresh = onRefresh
         )
     }
 }
@@ -135,12 +134,12 @@ private fun DashboardTabs(
 @Composable
 private fun DashboardPager(
     tabs: List<DashboardTabs>,
+    pagerState: PagerState,
     uiState: DashboardUiState,
-    dashboardViewModel: DashboardViewModel,
-    pagerState: PagerState
+    onSearch: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    val stocks by dashboardViewModel.filteredResults.collectAsState()
 
     HorizontalPager(
         state = pagerState,
@@ -158,17 +157,14 @@ private fun DashboardPager(
             DashboardTabs.STOCK_MARKET -> {
                 StockMarketScreen(
                     uiState = uiState,
-                    stocks = stocks,
                     modifier = screenModifier,
-                    pagerState = pagerState,
-                    onRefresh = { dashboardViewModel.fetchStocks() },
-                    onSearch = { dashboardViewModel.filterStocks(it) }
+                    onRefresh = onRefresh,
+                    onSearch = onSearch
                 )
             }
 
             DashboardTabs.WATCHLIST -> {
                 WatchlistScreen(
-                    dashboardViewModel = dashboardViewModel,
                     uiState = uiState,
                     modifier = screenModifier
                 )
@@ -182,8 +178,8 @@ private fun DashboardPager(
             .filter { !it }
             .first()
 
-        if (pagerState.currentPage == DashboardTabs.WATCHLIST.ordinal) {
-            dashboardViewModel.filterStocks("")
+        if (pagerState.currentPage == DashboardTabs.STOCK_MARKET.ordinal) {
+            onRefresh()
         }
     }
 }

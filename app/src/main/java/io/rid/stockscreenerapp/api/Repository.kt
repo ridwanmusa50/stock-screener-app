@@ -1,15 +1,11 @@
 package io.rid.stockscreenerapp.api
 
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import io.rid.stockscreenerapp.data.FilteredStock
 import io.rid.stockscreenerapp.network.ConnectionState
 import io.rid.stockscreenerapp.network.NetworkMonitor
 import io.rid.stockscreenerapp.ui.util.Const
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Response
 import java.io.IOException
@@ -118,28 +114,12 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
         }
     }
 
-    // endregion ===================================================================================================
-
-}
-
-fun <T> ViewModel.runRepoTask(
-    callback: suspend (ApiResponse<T>) -> Unit,
-    runTask: suspend () -> ApiResponse<T>
-) {
-    viewModelScope.launch(Dispatchers.IO) {
-        val result = try {
-            runTask()
-        } catch (e: Throwable) {
-            Log.e("API", e.toString())
-            ApiResponse.ExceptionErr(e)
-        }
-
-        withContext(Dispatchers.Main) {
-            try {
-                callback(result)
-            } catch (e: Throwable) {
-                Log.e("API", e.toString())
-            }
+    suspend fun filterStocks(keywords: String?): ApiResponse<FilteredStock> {
+        return callApi {
+            filterStocks("SYMBOL_SEARCH", keywords)
         }
     }
+
+    // endregion ===================================================================================================
+
 }

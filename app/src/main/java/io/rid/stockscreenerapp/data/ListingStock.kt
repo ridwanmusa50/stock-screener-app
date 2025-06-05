@@ -9,6 +9,5 @@ data class ListingStock(
     @CsvBindByName(column = "assetType")  val assetType: String = "",
     @CsvBindByName(column = "ipoDate") val ipoDate: String? = null,
     @CsvBindByName(column = "delistingDate")  val delistingDate: String? = null,
-    @CsvBindByName(column = "status") val status: String = "",
-    val isStarred: Boolean = false
+    @CsvBindByName(column = "status") val status: String = ""
 )

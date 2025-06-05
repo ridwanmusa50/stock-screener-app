@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -33,78 +34,59 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.rid.stockscreenerapp.R
-import io.rid.stockscreenerapp.data.ListingStock
+import io.rid.stockscreenerapp.data.Stocks
 import io.rid.stockscreenerapp.ui.component.AppImageBtn
 import io.rid.stockscreenerapp.ui.component.AppOutlinedTxtField
 import io.rid.stockscreenerapp.ui.component.AppTxt
 import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardUiState
 import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
+import io.rid.stockscreenerapp.ui.util.Const.Common
 import kotlinx.coroutines.FlowPreview
-
-@Composable
-fun StockMarketScreen(
-    uiState: DashboardUiState,
-    stocks: List<ListingStock>,
-    modifier: Modifier,
-    pagerState: PagerState,
-    onRefresh: () -> Unit,
-    onSearch: (String) -> Unit
-) {
-    val currentRefresh by rememberUpdatedState(onRefresh)
-    val currentSearch by rememberUpdatedState(onSearch)
-
-    LaunchedEffect(Unit) {
-        if (uiState.stocks.isEmpty()) currentRefresh()
-    }
-
-    StockMarketContent(
-        uiState = uiState,
-        stocks = stocks,
-        modifier = modifier,
-        pagerState = pagerState,
-        onRefresh = currentRefresh,
-        onSearchResult = currentSearch
-    )
-}
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 
 @OptIn(FlowPreview::class)
 @Composable
-private fun StockMarketContent(
+fun StockMarketScreen(
     uiState: DashboardUiState,
-    stocks: List<ListingStock>,
     modifier: Modifier,
-    pagerState: PagerState,
     onRefresh: () -> Unit,
-    onSearchResult: (String) -> Unit
+    onSearch: (String) -> Unit
 ) {
-    var search by rememberSaveable { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = modifier.navigationBarsPadding()) {
         SearchBar(
-            search = search,
-            onSearchResult = {
-                search = it
-                onSearchResult.invoke(it)
+            query = query,
+            onQueryChanged = {
+                query = it
+                onSearch(it)
             }
         )
-
-        StockList(uiState = uiState, stocks = stocks, onRefresh = onRefresh, onStockSelected = {
-            // TODO navigate to next screen
-        })
+        StockList(
+            uiState = uiState,
+            onRefresh = onRefresh,
+            onStockSelected = { /* Navigate here */ }
+        )
     }
 
-    LaunchedEffect(pagerState.currentPage) {
-        search = ""
+    // Reset search on tab switch
+    LaunchedEffect(Unit) {
+        snapshotFlow { query }
+            .drop(1)
+            .debounce(Common.SEARCH_DEBOUNCE)
+            .collectLatest { onSearch(it) }
     }
 }
 
 @Composable
-private fun SearchBar(search: String, onSearchResult: (String) -> Unit) {
+private fun SearchBar(query: String, onQueryChanged: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
 
     AppOutlinedTxtField(
-        value = search,
+        value = query,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Spacing.spacing4),
@@ -117,7 +99,7 @@ private fun SearchBar(search: String, onSearchResult: (String) -> Unit) {
         singleLine = true,
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus(true) }),
-        onValueChange = onSearchResult
+        onValueChange = onQueryChanged
     )
 }
 
@@ -125,9 +107,8 @@ private fun SearchBar(search: String, onSearchResult: (String) -> Unit) {
 @Composable
 private fun StockList(
     uiState: DashboardUiState,
-    stocks: List<ListingStock>,
     onRefresh: () -> Unit,
-    onStockSelected: (ListingStock) -> Unit
+    onStockSelected: (Stocks) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -136,8 +117,8 @@ private fun StockList(
         onRefresh = onRefresh
     ) {
         LazyColumn {
-            items(count = stocks.size) { index ->
-                val stock = stocks[index]
+            items(count = uiState.stocks.size) { index ->
+                val stock = uiState.stocks[index]
                 StockMarket(stock = stock, onStockSelected = onStockSelected)
             }
         }
@@ -145,7 +126,7 @@ private fun StockList(
 }
 
 @Composable
-private fun StockMarket(stock: ListingStock, onStockSelected: (ListingStock) -> Unit) {
+private fun StockMarket(stock: Stocks, onStockSelected: (Stocks) -> Unit) {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
