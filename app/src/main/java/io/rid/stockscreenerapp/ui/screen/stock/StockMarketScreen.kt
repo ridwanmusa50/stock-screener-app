@@ -51,22 +51,21 @@ fun StockMarketScreen(
     uiState: DashboardUiState,
     modifier: Modifier,
     onRefresh: () -> Unit,
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
+    onStockStarred: (String, Boolean) -> Unit
 ) {
     var query by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = modifier.navigationBarsPadding()) {
         SearchBar(
             query = query,
-            onQueryChanged = {
-                query = it
-                onSearch(it)
-            }
+            onQueryChanged = { query = it }
         )
         StockList(
             uiState = uiState,
             onRefresh = onRefresh,
-            onStockSelected = { /* Navigate here */ }
+            onStockSelected = { /* Navigate here */ },
+            onStockStarred = onStockStarred
         )
     }
 
@@ -106,7 +105,8 @@ private fun SearchBar(query: String, onQueryChanged: (String) -> Unit) {
 private fun StockList(
     uiState: DashboardUiState,
     onRefresh: () -> Unit,
-    onStockSelected: (Stock) -> Unit
+    onStockSelected: (Stock) -> Unit,
+    onStockStarred: (String, Boolean) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -117,14 +117,18 @@ private fun StockList(
         LazyColumn {
             items(count = uiState.stocks.size) { index ->
                 val stock = uiState.stocks[index]
-                StockMarket(stock = stock, onStockSelected = onStockSelected)
+                StockMarket(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
             }
         }
     }
 }
 
 @Composable
-private fun StockMarket(stock: Stock, onStockSelected: (Stock) -> Unit) {
+private fun StockMarket(
+    stock: Stock,
+    onStockSelected: (Stock) -> Unit,
+    onStockStarred: (String, Boolean) -> Unit
+) {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
@@ -171,9 +175,8 @@ private fun StockMarket(stock: Stock, onStockSelected: (Stock) -> Unit) {
                     bottom.linkTo(parent.bottom)
                 },
             imageModifier = Modifier.size(Dimen.Size.icStar),
-            contentScale = ContentScale.Fit
-        ) {
-            // TODO update starred to local db
-        }
+            contentScale = ContentScale.Fit,
+            onClick = { onStockStarred(stock.symbol, stock.isStarred) }
+        )
     }
 }

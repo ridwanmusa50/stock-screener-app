@@ -1,6 +1,7 @@
 package io.rid.stockscreenerapp.ui.screen.dashboard
 
 import android.content.Context
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,8 @@ class DashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
+    private val localStocks = MutableStateFlow<List<Stock>>(emptyList())
+
     fun fetchStocks() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, err = null) }
@@ -45,21 +48,30 @@ class DashboardViewModel @Inject constructor(
                 is ApiResponse.Success -> {
                     val csvContent = result.data.string()
                     val parsed = parseStockCsv(csvContent)
+                    val stocksFromDb = loadStockFromRoomDb().orEmpty() // avoid null
 
                     if (parsed.isNotEmpty()) {
-                        val stocks = parsed.map { stock ->
-                            Stock(stock.symbol, stock.name)
-                        }.sortedBy { stock -> stock.symbol }
+                        // Map parsed stocks with isStarred from local DB
+                        val mergedStocks = parsed.map { stock ->
+                            val localStock = stocksFromDb.firstOrNull { it.symbol == stock.symbol }
+                            Stock(
+                                symbol = stock.symbol,
+                                name = stock.name,
+                                isStarred = localStock?.isStarred == true // default false if null
+                            )
+                        }.sortedBy { it.symbol }
 
-                        dao.insertStocks(stocks)
-                        stocks
+                        dao.insertStocks(mergedStocks)
+                        mergedStocks
                     } else {
-                        loadStockFromRoomDb()
+                        stocksFromDb
                     }
                 }
 
                 is ApiResponse.Err -> loadStockFromRoomDb()
             }
+
+            if (stocks != null) localStocks.value = stocks
 
             _uiState.update {
                 it.copy(
@@ -75,13 +87,16 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             when (val result = repository.filterStocks(query)) {
                 is ApiResponse.Success -> {
-                    val stocks = if (result.data.filteredResults.isNotEmpty()) {
-                        result.data.filteredResults
-                            .map { Stock(it.symbol, it.name) }
-                            .sortedBy { it.symbol }
+                    val filteredStock = result.data.filteredResults
+                    val stocks = if (filteredStock?.isNotEmpty() == true) {
+                        filteredStock.map { remoteStock ->
+                            val localStock = localStocks.value.firstOrNull { it.symbol == remoteStock.symbol }
+                            Stock(remoteStock.symbol, remoteStock.name, localStock?.isStarred == true)
+                        }.sortedBy { it.symbol }
                     } else {
                         filterFromListingStock(query)
                     }
+
                     _uiState.update { it.copy(stocks = stocks) }
                 }
 
@@ -89,6 +104,29 @@ class DashboardViewModel @Inject constructor(
                     _uiState.update { it.copy(err = result) }
                 }
             }
+        }
+    }
+
+    fun updateStockStar(symbol: String, isStarred: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.updateStarredStock(symbol, !isStarred)
+
+            // Update just one item in local cache
+            val updatedList = localStocks.value.map {
+                if (it.symbol == symbol) it.copy(isStarred = !isStarred) else it
+            }
+
+            localStocks.value = updatedList
+
+            if (updatedList != _uiState.value.stocks) {
+                _uiState.update { it.copy(stocks = updatedList) }
+            }
+        }
+    }
+
+    fun onTabSelected(index: Int, pagerState: PagerState) {
+        viewModelScope.launch {
+            pagerState.animateScrollToPage(index)
         }
     }
 

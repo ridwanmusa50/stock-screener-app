@@ -20,7 +20,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,24 +37,23 @@ import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
 import io.rid.stockscreenerapp.ui.theme.fullRoundedCornerShape
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 @Composable
-fun DashboardScreen() {
-    val dashboardViewModel = hiltViewModel<DashboardViewModel>()
-    val pagerState = rememberPagerState(initialPage = 0) { DashboardTabs.entries.size }
-    val coroutineScope = rememberCoroutineScope()
-    val tabs = remember { DashboardTabs.entries.toList() }
-
+fun DashboardScreen(dashboardViewModel: DashboardViewModel = hiltViewModel()) {
     val uiState by dashboardViewModel.uiState.collectAsStateWithLifecycle()
+    val tabs = remember { DashboardTabs.entries.toList() }
+    val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
 
     DashboardContent(
         uiState = uiState,
         pagerState = pagerState,
         tabs = tabs,
-        onTabSelected = { index -> coroutineScope.launch { pagerState.animateScrollToPage(index) } },
+        onTabSelected = { index -> dashboardViewModel.onTabSelected(index, pagerState) },
         onSearch = dashboardViewModel::filterStocks,
-        onRefresh = dashboardViewModel::fetchStocks
+        onRefresh = dashboardViewModel::fetchStocks,
+        onStockStarred = { symbol, isStarred ->
+            dashboardViewModel.updateStockStar(symbol, isStarred)
+        }
     )
 }
 
@@ -67,7 +65,8 @@ private fun DashboardContent(
     tabs: List<DashboardTabs>,
     onTabSelected: (Int) -> Unit,
     onSearch: (String) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onStockStarred: (String, Boolean) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -86,7 +85,8 @@ private fun DashboardContent(
             pagerState = pagerState,
             uiState = uiState,
             onSearch = onSearch,
-            onRefresh = onRefresh
+            onRefresh = onRefresh,
+            onStockStarred = onStockStarred
         )
     }
 }
@@ -137,7 +137,8 @@ private fun DashboardPager(
     pagerState: PagerState,
     uiState: DashboardUiState,
     onSearch: (String) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onStockStarred: (String, Boolean) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -159,7 +160,8 @@ private fun DashboardPager(
                     uiState = uiState,
                     modifier = screenModifier,
                     onRefresh = onRefresh,
-                    onSearch = onSearch
+                    onSearch = onSearch,
+                    onStockStarred = onStockStarred
                 )
             }
 

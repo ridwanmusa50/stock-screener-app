@@ -15,4 +15,7 @@ interface Dao {
     @Query("SELECT * FROM stock")
     suspend fun getStocks(): List<Stock>
 
+    @Query("UPDATE stock SET isStarred = :isStarred WHERE symbol = :symbol")
+    suspend fun updateStarredStock(symbol: String, isStarred: Boolean)
+
 }

@@ -3,7 +3,7 @@ package io.rid.stockscreenerapp.data
 import com.google.gson.annotations.SerializedName
 
 data class FilteredStock(
-    @SerializedName("bestMatches") val filteredResults: List<FilteredResult>
+    @SerializedName("bestMatches") val filteredResults: List<FilteredResult>?
 )
 
 data class FilteredResult(
