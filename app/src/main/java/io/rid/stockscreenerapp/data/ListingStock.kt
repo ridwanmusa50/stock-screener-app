@@ -1,11 +1,14 @@
 package io.rid.stockscreenerapp.data
 
+import com.opencsv.bean.CsvBindByName
+
 data class ListingStock(
-    val symbol: String,
-    val name: String,
-    val exchange: String,
-    val assetType: String,
-    val ipoDate: String?,
-    val delistingDate: String?,
-    val status: String
+    @CsvBindByName(column = "symbol") val symbol: String = "",
+    @CsvBindByName(column = "name") val name: String = "",
+    @CsvBindByName(column = "exchange")  val exchange: String = "",
+    @CsvBindByName(column = "assetType")  val assetType: String = "",
+    @CsvBindByName(column = "ipoDate") val ipoDate: String? = null,
+    @CsvBindByName(column = "delistingDate")  val delistingDate: String? = null,
+    @CsvBindByName(column = "status") val status: String = "",
+    val isStarred: Boolean = false
 )

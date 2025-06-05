@@ -166,6 +166,7 @@ dependencies {
     implementation(libs.androidx.hilt.hilt.navigation.compose)
     implementation(libs.androidx.hilt.hilt.navigation.fragment)
     implementation(libs.google.dagger.hilt.android)
+    debugImplementation(libs.androidx.ui.tooling)
     kapt(libs.google.dagger.hilt.compiler)
 
     // =============================================================================================================
@@ -187,6 +188,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.gif)
 
+    // Jsoizo - Kotlin CSV
+    implementation(libs.opencsv.opencsv)
 }
 
 hilt { enableAggregatingTask = false }

@@ -8,7 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.rid.stockscreenerapp.api.ApiService
 import io.rid.stockscreenerapp.api.ApiServiceBuilder
-import io.rid.stockscreenerapp.api.interceptor.Repository
+import io.rid.stockscreenerapp.api.Repository
 import io.rid.stockscreenerapp.network.NetworkMonitor
 import javax.inject.Singleton
 

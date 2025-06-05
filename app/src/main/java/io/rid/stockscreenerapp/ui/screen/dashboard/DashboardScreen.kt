@@ -18,12 +18,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.rid.stockscreenerapp.ui.component.AppLoadImage
 import io.rid.stockscreenerapp.ui.component.AppTxt
 import io.rid.stockscreenerapp.ui.screen.stock.StockMarketScreen
@@ -32,6 +38,8 @@ import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
 import io.rid.stockscreenerapp.ui.theme.fullRoundedCornerShape
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
@@ -41,7 +49,10 @@ fun DashboardScreen() {
     val coroutineScope = rememberCoroutineScope()
     val tabs = remember { DashboardTabs.entries.toList() }
 
+    val uiState by dashboardViewModel.uiState.collectAsStateWithLifecycle()
+
     DashboardContent(
+        uiState = uiState,
         dashboardViewModel = dashboardViewModel,
         pagerState = pagerState,
         coroutineScope = coroutineScope,
@@ -52,6 +63,7 @@ fun DashboardScreen() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DashboardContent(
+    uiState: DashboardUiState,
     dashboardViewModel: DashboardViewModel,
     pagerState: PagerState,
     coroutineScope: CoroutineScope,
@@ -71,7 +83,12 @@ private fun DashboardContent(
                 coroutineScope.launch { pagerState.animateScrollToPage(index) }
             }
         )
-        DashboardPager(tabs = tabs, dashboardViewModel = dashboardViewModel, pagerState = pagerState)
+        DashboardPager(
+            tabs = tabs,
+            uiState = uiState,
+            dashboardViewModel = dashboardViewModel,
+            pagerState = pagerState
+        )
     }
 }
 
@@ -104,8 +121,8 @@ private fun DashboardTabs(
                     AppLoadImage(
                         imageResId = tab.iconResId,
                         modifier = Modifier.size(
-                            if (isSelected) Dimen.WidthHeight.tabIconExpanded
-                            else Dimen.WidthHeight.tabIconDefault
+                            if (isSelected) Dimen.Size.tabIconExpanded
+                            else Dimen.Size.tabIconDefault
                         ),
                     )
                 },
@@ -118,24 +135,55 @@ private fun DashboardTabs(
 @Composable
 private fun DashboardPager(
     tabs: List<DashboardTabs>,
+    uiState: DashboardUiState,
     dashboardViewModel: DashboardViewModel,
     pagerState: PagerState
 ) {
+    val focusManager = LocalFocusManager.current
+    val stocks by dashboardViewModel.filteredResults.collectAsState()
+
     HorizontalPager(
         state = pagerState,
         modifier = Modifier.fillMaxSize(),
         beyondViewportPageCount = 1,
+        pageSpacing = Spacing.spacing4,
         verticalAlignment = Alignment.Top
     ) { page ->
         val screenModifier = Modifier
             .fillMaxSize()
             .background(color = Color.White, shape = fullRoundedCornerShape.extraLarge)
-            .padding(horizontal = Spacing.spacing16, vertical = Spacing.spacing16)
+            .padding(top = Spacing.spacing16)
 
         when (tabs[page]) {
-            DashboardTabs.STOCK_MARKET -> StockMarketScreen(dashboardViewModel = dashboardViewModel, modifier = screenModifier)
-            DashboardTabs.WATCHLIST -> WatchlistScreen(dashboardViewModel = dashboardViewModel, modifier = screenModifier)
+            DashboardTabs.STOCK_MARKET -> {
+                StockMarketScreen(
+                    uiState = uiState,
+                    stocks = stocks,
+                    modifier = screenModifier,
+                    pagerState = pagerState,
+                    onRefresh = { dashboardViewModel.fetchStocks() },
+                    onSearch = { dashboardViewModel.filterStocks(it) }
+                )
+            }
+
+            DashboardTabs.WATCHLIST -> {
+                WatchlistScreen(
+                    dashboardViewModel = dashboardViewModel,
+                    uiState = uiState,
+                    modifier = screenModifier
+                )
+            }
         }
     }
 
+    LaunchedEffect(pagerState.currentPage) {
+        focusManager.clearFocus(force = true)
+        snapshotFlow { pagerState.isScrollInProgress }
+            .filter { !it }
+            .first()
+
+        if (pagerState.currentPage == DashboardTabs.WATCHLIST.ordinal) {
+            dashboardViewModel.filterStocks("")
+        }
+    }
 }

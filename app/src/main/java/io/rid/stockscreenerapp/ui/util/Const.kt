@@ -6,4 +6,8 @@ object Const {
         const val TOO_MANY_REQUESTS = 429
     }
 
+    object Common {
+        const val SEARCH_DEBOUNCE = 300L
+    }
+
 }

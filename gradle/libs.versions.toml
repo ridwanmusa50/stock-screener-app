@@ -45,6 +45,9 @@ coilGif = "2.6.0"
 # Serialization
 serializationJson = "1.8.1"
 
+# OpenCsv
+openCsv = "5.11"
+
 
 
 ##############################################################################################################
@@ -121,6 +124,8 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 # =====================================================
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilCompose" }
 coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coilGif" }
+
+opencsv-opencsv = { group = "com.opencsv", name = "opencsv", version.ref = "openCsv" }
 
 
 ##############################################################################################################

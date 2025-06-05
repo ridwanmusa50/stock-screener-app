@@ -41,7 +41,7 @@ fun AppOutlinedTxtField(
     isError: Boolean = false,
     @StringRes placeHolderTxtResId: Int? = null,
     placeHolderTxtStyle: TextStyle = AppTypography.bodySmall.copy(color = gray03100),
-    txtStyle: TextStyle = AppTypography.bodySmall,
+    txtStyle: TextStyle = AppTypography.bodyMedium,
     singleLine: Boolean = false,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     horizontalPadding: Dp = Dimen.Spacing.spacing12,

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
 import io.rid.stockscreenerapp.R
 import io.rid.stockscreenerapp.ui.theme.AppTypography
 import io.rid.stockscreenerapp.ui.theme.Dimen
@@ -59,7 +60,7 @@ fun AppLoadingDialog() {
 private fun AppLoading(modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.Companion.Center,
-        modifier = modifier
+        modifier = modifier.zIndex(1f)
     ) {
         AppLoadImage(
             imageResId = R.drawable.ic_loading_spinner,
