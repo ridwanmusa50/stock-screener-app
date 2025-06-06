@@ -19,6 +19,7 @@ import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
@@ -141,6 +142,11 @@ private fun DashboardPager(
     onStockStarred: (String, Boolean) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val starredStock by remember(uiState.stocks) {
+        derivedStateOf {
+            uiState.stocks.filter { it.isStarred }
+        }
+    }
 
     HorizontalPager(
         state = pagerState,
@@ -158,17 +164,21 @@ private fun DashboardPager(
             DashboardTabs.STOCK_MARKET -> {
                 StockMarketScreen(
                     uiState = uiState,
+                    pagerState = pagerState,
                     modifier = screenModifier,
                     onRefresh = onRefresh,
                     onSearch = onSearch,
+                    onStockSelected = { },
                     onStockStarred = onStockStarred
                 )
             }
 
             DashboardTabs.WATCHLIST -> {
                 WatchlistScreen(
-                    uiState = uiState,
-                    modifier = screenModifier
+                    stocks = starredStock,
+                    modifier = screenModifier,
+                    onStockSelected = { },
+                    onStockStarred = onStockStarred
                 )
             }
         }

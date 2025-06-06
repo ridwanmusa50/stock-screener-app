@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,7 @@ import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.ui.component.AppImageBtn
 import io.rid.stockscreenerapp.ui.component.AppOutlinedTxtField
 import io.rid.stockscreenerapp.ui.component.AppTxt
+import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardTabs
 import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardUiState
 import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
@@ -49,9 +51,11 @@ import kotlinx.coroutines.flow.drop
 @Composable
 fun StockMarketScreen(
     uiState: DashboardUiState,
+    pagerState: PagerState,
     modifier: Modifier,
     onRefresh: () -> Unit,
     onSearch: (String) -> Unit,
+    onStockSelected: (Stock) -> Unit,
     onStockStarred: (String, Boolean) -> Unit
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -64,7 +68,7 @@ fun StockMarketScreen(
         StockList(
             uiState = uiState,
             onRefresh = onRefresh,
-            onStockSelected = { /* Navigate here */ },
+            onStockSelected = onStockSelected,
             onStockStarred = onStockStarred
         )
     }
@@ -75,6 +79,12 @@ fun StockMarketScreen(
             .drop(1)
             .debounce(Common.SEARCH_DEBOUNCE)
             .collectLatest { onSearch(it) }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage == DashboardTabs.WATCHLIST.ordinal) {
+            query = ""
+        }
     }
 }
 
