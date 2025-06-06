@@ -1,6 +1,8 @@
 package io.rid.stockscreenerapp.ui.screen.dashboard
 
 import android.content.Context
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
@@ -10,9 +12,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.rid.stockscreenerapp.R
 import io.rid.stockscreenerapp.api.ApiResponse
 import io.rid.stockscreenerapp.api.Repository
+import io.rid.stockscreenerapp.data.ListingStock
 import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.database.Dao
 import io.rid.stockscreenerapp.ui.util.parseStockCsv
+import io.rid.stockscreenerapp.ui.util.readCsvFromRaw
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,9 +27,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @Stable
-enum class DashboardTabs(val titleResId: Int, val iconResId: Int) {
+enum class DashboardTabs(@StringRes val titleResId: Int, @DrawableRes val iconResId: Int) {
     STOCK_MARKET(R.string.general_stocks, R.drawable.ic_stock_market),
     WATCHLIST(R.string.general_watchlist, R.drawable.ic_watchlist)
+}
+
+// Track the last starred action
+sealed class StarredAction {
+    object STARRED : StarredAction()
+    object UNSTARRED : StarredAction()
 }
 
 @HiltViewModel
@@ -50,21 +61,26 @@ class DashboardViewModel @Inject constructor(
                     val parsed = parseStockCsv(csvContent)
                     val stocksFromDb = loadStockFromRoomDb().orEmpty() // avoid null
 
-                    if (parsed.isNotEmpty()) {
-                        // Map parsed stocks with isStarred from local DB
-                        val mergedStocks = parsed.map { stock ->
-                            val localStock = stocksFromDb.firstOrNull { it.symbol == stock.symbol }
-                            Stock(
-                                symbol = stock.symbol,
-                                name = stock.name,
-                                isStarred = localStock?.isStarred == true // default false if null
-                            )
-                        }.sortedBy { it.symbol }
+                    when {
+                        parsed.isNotEmpty() -> {
+                            // Map parsed stocks with isStarred from local DB
+                            val mergedStocks = mergeWithLocal(parsed, stocksFromDb)
+                            dao.insertStocks(mergedStocks)
+                            mergedStocks
+                        }
 
-                        dao.insertStocks(mergedStocks)
-                        mergedStocks
-                    } else {
-                        stocksFromDb
+                        stocksFromDb.isNotEmpty() -> {
+                            stocksFromDb
+                        }
+
+                        else -> {
+                            val fallbackContent = readCsvFromRaw(context, R.raw.listing_status)
+                            val fallbackStocks = parseStockCsv(fallbackContent)
+                            val mergedStocks = mergeWithLocal(fallbackStocks, stocksFromDb)
+
+                            dao.insertStocks(mergedStocks)
+                            mergedStocks
+                        }
                     }
                 }
 
@@ -107,27 +123,35 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun updateStockStar(symbol: String, isStarred: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            dao.updateStarredStock(symbol, !isStarred)
+    fun updateStockStar(stock: Stock) {
+        val newStarredState = !stock.isStarred
 
-            // Update just one item in local cache
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.updateStarredStock(stock.symbol, newStarredState)
+
             val updatedList = localStocks.value.map {
-                if (it.symbol == symbol) it.copy(isStarred = !isStarred) else it
+                if (it.symbol == stock.symbol) it.copy(isStarred = newStarredState) else it
             }
 
             localStocks.value = updatedList
 
-            if (updatedList != _uiState.value.stocks) {
-                _uiState.update { it.copy(stocks = updatedList) }
+            _uiState.update { state ->
+                state.copy(
+                    stocks = updatedList,
+                    lastStarredAction = if (newStarredState) StarredAction.STARRED else StarredAction.UNSTARRED
+                )
             }
         }
     }
 
-    fun onTabSelected(index: Int, pagerState: PagerState) {
-        viewModelScope.launch {
+    fun onTabSelected(index: Int, pagerState: PagerState, coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
             pagerState.animateScrollToPage(index)
         }
+    }
+
+    fun clearLastStarredAction() {
+        _uiState.update { it.copy(lastStarredAction = null) }
     }
 
     private suspend fun loadStockFromRoomDb(): List<Stock>? {
@@ -143,5 +167,17 @@ class DashboardViewModel @Inject constructor(
             }.sortedBy { it.symbol }
         }
     }
+
+    private fun mergeWithLocal(listingStocks: List<ListingStock>, stock: List<Stock>): List<Stock> {
+        return listingStocks.map { listingStock ->
+            val localStock = stock.firstOrNull { it.symbol == listingStock.symbol }
+            Stock(
+                symbol = listingStock.symbol,
+                name = listingStock.name,
+                isStarred = localStock?.isStarred == true
+            )
+        }.sortedBy { it.symbol }
+    }
+
 
 }

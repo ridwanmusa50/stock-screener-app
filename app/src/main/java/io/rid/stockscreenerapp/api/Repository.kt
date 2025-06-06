@@ -1,7 +1,9 @@
 package io.rid.stockscreenerapp.api
 
 import android.util.Log
+import io.rid.stockscreenerapp.data.CompanyOverview
 import io.rid.stockscreenerapp.data.FilteredStock
+import io.rid.stockscreenerapp.data.MonthlyStock
 import io.rid.stockscreenerapp.network.ConnectionState
 import io.rid.stockscreenerapp.network.NetworkMonitor
 import io.rid.stockscreenerapp.ui.util.Const
@@ -117,6 +119,18 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
     suspend fun filterStocks(keywords: String?): ApiResponse<FilteredStock> {
         return callApi {
             filterStocks("SYMBOL_SEARCH", keywords)
+        }
+    }
+
+    suspend fun getCompanyOverview(symbol: String): ApiResponse<CompanyOverview> {
+        return callApi {
+            getCompanyOverview("ETF_PROFILE", symbol)
+        }
+    }
+
+    suspend fun getMonthlyStock(symbol: String): ApiResponse<MonthlyStock> {
+        return callApi {
+            getMonthlyStock("TIME_SERIES_MONTHLY", symbol)
         }
     }
 

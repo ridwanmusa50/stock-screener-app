@@ -45,7 +45,7 @@ import io.rid.stockscreenerapp.ui.util.Const.Common
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -56,9 +56,25 @@ fun StockMarketScreen(
     onRefresh: () -> Unit,
     onSearch: (String) -> Unit,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (String, Boolean) -> Unit
+    onStockStarred: (Stock) -> Unit
 ) {
     var query by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(Unit) { onRefresh() }
+
+    // Reset search on tab switch
+    LaunchedEffect(Unit) {
+        snapshotFlow { query }
+            .debounce(Common.SEARCH_DEBOUNCE)
+            .distinctUntilChanged()
+            .collectLatest { onSearch(it) }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage == DashboardTabs.WATCHLIST.ordinal) {
+            query = ""
+        }
+    }
 
     Column(modifier = modifier.navigationBarsPadding()) {
         SearchBar(
@@ -71,20 +87,6 @@ fun StockMarketScreen(
             onStockSelected = onStockSelected,
             onStockStarred = onStockStarred
         )
-    }
-
-    // Reset search on tab switch
-    LaunchedEffect(Unit) {
-        snapshotFlow { query }
-            .drop(1)
-            .debounce(Common.SEARCH_DEBOUNCE)
-            .collectLatest { onSearch(it) }
-    }
-
-    LaunchedEffect(pagerState.currentPage) {
-        if (pagerState.currentPage == DashboardTabs.WATCHLIST.ordinal) {
-            query = ""
-        }
     }
 }
 
@@ -116,7 +118,7 @@ private fun StockList(
     uiState: DashboardUiState,
     onRefresh: () -> Unit,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (String, Boolean) -> Unit
+    onStockStarred: (Stock) -> Unit
 ) {
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
@@ -137,7 +139,7 @@ private fun StockList(
 private fun StockMarket(
     stock: Stock,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (String, Boolean) -> Unit
+    onStockStarred: (Stock) -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -186,7 +188,7 @@ private fun StockMarket(
                 },
             imageModifier = Modifier.size(Dimen.Size.icStar),
             contentScale = ContentScale.Fit,
-            onClick = { onStockStarred(stock.symbol, stock.isStarred) }
+            onClick = { onStockStarred(stock) }
         )
     }
 }

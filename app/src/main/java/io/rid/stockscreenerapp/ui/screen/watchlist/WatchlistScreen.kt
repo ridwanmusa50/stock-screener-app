@@ -26,21 +26,21 @@ fun WatchlistScreen(
     stocks: List<Stock>,
     modifier: Modifier,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (String, Boolean) -> Unit
+    onStockStarred: (Stock) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         items(count = stocks.size) { index ->
             val stock = stocks[index]
-            FavouriteStock(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
+            WatchlistItem(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
         }
     }
 }
 
 @Composable
-private fun FavouriteStock(
+private fun WatchlistItem(
     stock: Stock,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (String, Boolean) -> Unit
+    onStockStarred: (Stock) -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -89,7 +89,7 @@ private fun FavouriteStock(
                 },
             imageModifier = Modifier.size(Dimen.Size.icStar),
             contentScale = ContentScale.Fit,
-            onClick = { onStockStarred(stock.symbol, stock.isStarred) }
+            onClick = { onStockStarred(stock) }
         )
     }
 }

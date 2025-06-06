@@ -10,4 +10,6 @@
     <string name = "logout.popup_title">Are you sure want to logout?</string>
     <string name = "placeholder.search_stock">Search for stock</string>
     <string name = "server.generic_server_error">We are unable to process your request. Please try again.</string>
+    <string name = "snackbar.add_msg">Added to Watchlist</string>
+    <string name = "snackbar.remove_msg">Removed from Watchlist</string>
 </resources>

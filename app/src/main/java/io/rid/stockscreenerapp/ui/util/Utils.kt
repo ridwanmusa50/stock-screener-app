@@ -1,8 +1,13 @@
 package io.rid.stockscreenerapp.ui.util
 
+import android.content.Context
 import android.util.Log
 import com.opencsv.bean.CsvToBeanBuilder
 import io.rid.stockscreenerapp.data.ListingStock
+
+fun readCsvFromRaw(context: Context, resId: Int): String {
+    return context.resources.openRawResource(resId).bufferedReader().use { it.readText() }
+}
 
 fun parseStockCsv(content: String): List<ListingStock> {
     val reader = content.reader()

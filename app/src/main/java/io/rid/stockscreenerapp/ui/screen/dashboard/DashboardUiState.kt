@@ -6,5 +6,6 @@ import io.rid.stockscreenerapp.data.Stock
 data class DashboardUiState(
     val isLoading: Boolean = false,
     val stocks: List<Stock> = emptyList(),
-    val err: ApiResponse.Err? = null
+    val err: ApiResponse.Err? = null,
+    val lastStarredAction: StarredAction? = null
 )

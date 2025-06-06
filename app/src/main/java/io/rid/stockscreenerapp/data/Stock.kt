@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Stock(
     @PrimaryKey
-    val symbol: String,
-    val name: String,
+    val symbol: String = "",
+    val name: String = "",
     val isStarred: Boolean = false
 )

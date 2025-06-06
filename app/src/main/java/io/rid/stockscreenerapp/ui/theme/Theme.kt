@@ -14,7 +14,9 @@ private val lightScheme = lightColorScheme(
     primaryContainer = black03100,
     secondary = pink01100,
     onSecondary = black01100,
-    secondaryContainer = black03100
+    secondaryContainer = black03100,
+    surface = Color.White,  // Default background for components like Snackbar
+    onSurface = black01100, // Default text color on surface
 )
 
 @Composable
