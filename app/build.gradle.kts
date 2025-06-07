@@ -26,8 +26,20 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+
+            annotationProcessorOptions {
+
+                arguments += mapOf(
+                    "room.schemaLocation" to "$projectDir/src/main/assets/schemas",
+                    "room.incremental" to "true"
+                )
+
+            }
+
+        }
     }
 
     signingConfigs {
@@ -37,43 +49,63 @@ android {
             storePassword = signPw
             keyPassword = signPw
         }
+
+        getByName("debug") {
+            storeFile = file("keys/stock-screener-keystore.jks")
+            keyAlias = signKeyAlias
+            storePassword = signPw
+            keyPassword = signPw
+        }
     }
 
     buildTypes {
 
-        getByName("release") {
-            signingConfig = signingConfigs.getByName("prod")
-        }
-        fun AppExtension.configureBuildType(name: String) {
+        fun AppExtension.configureBuildType(buildType: String, isProduction: Boolean = false) {
             val configureAction: ApplicationBuildType.() -> Unit = {
                 isDebuggable = false
                 isMinifyEnabled = false
                 isShrinkResources = false
+                signingConfig = signingConfigs.getByName("prod")
+
+                if (!isProduction) matchingFallbacks += listOf("debug")
                 proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 
-                buildConfigStringField("BASE_API_URL", "https://www.alphavantage.co")
                 buildConfigFieldWithProperty("API_ACCESS_KEY", projectProperties)
             }
 
-            if (names.contains(name)) {
-                getByName(name, configureAction)
+            if (names.contains(buildType)) {
+                getByName(buildType, configureAction)
             } else {
-                create(name, configureAction)
+                val baseBuildType = if (buildType != "release" && buildType.contains("release")) getByName("release") else null
+
+                create(buildType) {
+                    baseBuildType?.let { initWith(it) }
+                    configureAction(this)
+                }
             }
 
-            val debugName = "${name}Debug"
-            create(debugName) {
-                initWith(getByName(name))
+            // Debuggable build
+            create("${buildType}Debug") {
+                initWith(getByName(buildType))
                 isDebuggable = true
-                val debugAppName = "Stock Screener - Debug"
-                resValue("string", "app_name", debugAppName)
+                signingConfig = signingConfigs.getByName("prod")
+
+                resValue("string", "app_name", "Stock Screener - Debug")
             }
         }
 
+        configureBuildType("development")
         configureBuildType("release")
     }
 
     productFlavors {
+
+        // Development environment
+        create("dev") {
+            applicationIdSuffix = ".dev" // io.rid.stockscreenapp.dev
+            dimension = "version"
+        }
+
         create("production") {
             dimension = "version"
         }
@@ -83,8 +115,10 @@ android {
         beforeVariants { variantBuilder ->
             // To specific certain build variant name
             if(
-                variantBuilder.name != "productionReleaseDebug" &&
-                variantBuilder.name != "productionRelease"
+                variantBuilder.name != "devDevelopment" &&
+                variantBuilder.name != "devDevelopmentDebug" &&
+                variantBuilder.name != "productionRelease" &&
+                variantBuilder.name != "productionReleaseDebug"
             ) {
                 // Gradle ignores any variants
                 variantBuilder.enable = false
@@ -103,6 +137,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlin.sourceSets.all {
+        languageSettings.optIn("androidx.compose.foundation.layout.ExperimentalLayoutApi")
+        languageSettings.optIn("androidx.compose.material3.ExperimentalMaterial3Api")
     }
 
     kotlinOptions {
@@ -127,6 +166,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.constraintlayout.compose)
@@ -167,7 +207,6 @@ dependencies {
     implementation(libs.androidx.hilt.hilt.navigation.compose)
     implementation(libs.androidx.hilt.hilt.navigation.fragment)
     implementation(libs.google.dagger.hilt.android)
-    debugImplementation(libs.androidx.ui.tooling)
     kapt(libs.google.dagger.hilt.compiler)
 
     // =============================================================================================================
@@ -185,7 +224,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // =============================================================================================================
@@ -200,4 +238,6 @@ dependencies {
     implementation(libs.opencsv.opencsv)
 }
 
+// Allow references to generated code
+kapt { correctErrorTypes = true }
 hilt { enableAggregatingTask = false }
