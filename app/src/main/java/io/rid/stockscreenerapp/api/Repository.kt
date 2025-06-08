@@ -122,14 +122,26 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
     }
 
     suspend fun getCompanyOverview(symbol: String): ApiResponse<CompanyOverview> {
+        val symbolUsed = if (Const.Environment.IS_DEVELOPMENT_DEBUG_BUILD) {
+            Const.DemoData.COMPANY_OVERVIEW_SYMBOL
+        } else {
+            symbol
+        }
+
         return callApi {
-            getCompanyOverview("ETF_PROFILE", symbol)
+            getCompanyOverview("ETF_PROFILE", symbolUsed)
         }
     }
 
     suspend fun getMonthlyStock(symbol: String): ApiResponse<MonthlyStock> {
+        val symbolUsed = if (Const.Environment.IS_DEVELOPMENT_DEBUG_BUILD) {
+            Const.DemoData.TIME_SERIES_MONTHLY_SYMBOL
+        } else {
+            symbol
+        }
+
         return callApi {
-            getMonthlyStock("TIME_SERIES_MONTHLY", symbol)
+            getMonthlyStock("TIME_SERIES_MONTHLY", symbolUsed)
         }
     }
 
