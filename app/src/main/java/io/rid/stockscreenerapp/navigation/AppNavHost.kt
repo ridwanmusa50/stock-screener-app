@@ -13,8 +13,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import io.rid.stockscreenerapp.network.LocalIsNetworkAvailable
 import io.rid.stockscreenerapp.ui.component.AppNoInternetDialog
+import io.rid.stockscreenerapp.ui.screen.companyOverview.CompanyOverviewScreen
 import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardScreen
 import io.rid.stockscreenerapp.ui.screen.splash.SplashScreen
 import io.rid.stockscreenerapp.ui.theme.defaultEnterTransition
@@ -42,7 +44,23 @@ fun AppNavHost() {
             }
 
             setupScreen<Screen.Dashboard> {
-                DashboardScreen()
+                DashboardScreen { stock ->
+                    navController.navigate(
+                        Screen.StockOverview(
+                            symbol = stock.symbol,
+                            name = stock.name,
+                            isStarred = stock.isStarred
+                        )
+                    )
+                }
+            }
+
+            setupScreen<Screen.StockOverview> {
+                val symbol = it.toRoute<Screen.StockOverview>().symbol
+                val name = it.toRoute<Screen.StockOverview>().name
+                val isStarred = it.toRoute<Screen.StockOverview>().isStarred
+
+                CompanyOverviewScreen(symbol = symbol, name = name, isStarred = isStarred)
             }
         }
 

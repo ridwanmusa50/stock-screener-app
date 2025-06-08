@@ -14,12 +14,12 @@ data class CompanyOverview(
 )
 
 data class Sector(
-    @SerializedName("sector") val sector: String = "",
-    @SerializedName("weight") val weight: String = ""
+    @SerializedName("sector") val sector: String,
+    @SerializedName("weight") val weight: String
 )
 
 data class Holding(
-    @SerializedName("symbol") val symbol: String = "",
-    @SerializedName("description") val description: String = "",
-    @SerializedName("weight") val weight: String = ""
+    @SerializedName("symbol") val symbol: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("weight") val weight: String
 )

@@ -7,6 +7,9 @@ import com.opencsv.bean.CsvToBeanBuilder
 import io.rid.stockscreenerapp.R
 import io.rid.stockscreenerapp.api.ApiResponse
 import io.rid.stockscreenerapp.data.ListingStock
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
 object Utils {
 
@@ -38,6 +41,24 @@ object Utils {
             is ApiResponse.ServerUnavailableErr -> context.getString(R.string.server_service_unavailable)
             else -> context.getString(defaultErrTextRes ?: R.string.server_generic_server_error)
         }
+    }
+
+    fun formatWithThousandSeparator(
+        value: Float,
+        fractionDigits: Int = 2
+    ): String {
+        // Build format string dynamically, e.g. "#,##0.00" for 2 decimals
+        var formatStr = "#,##0"
+        if (fractionDigits > 0) {
+            formatStr += "."
+            repeat(fractionDigits) {
+                formatStr += "0"
+            }
+        }
+
+        // Create formatter with locale (for comma or dot)
+        val decimalFormat = DecimalFormat(formatStr, DecimalFormatSymbols(Locale.US))
+        return decimalFormat.format(value)
     }
 
 }

@@ -14,6 +14,7 @@ import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.database.Dao
 import io.rid.stockscreenerapp.ui.util.Utils.parseStockCsv
 import io.rid.stockscreenerapp.ui.util.Utils.readCsvFromRaw
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -134,8 +135,8 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun onTabSelected(index: Int, pagerState: PagerState) {
-        viewModelScope.launch {
+    fun onTabSelected(index: Int, pagerState: PagerState, coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
             pagerState.animateScrollToPage(index)
         }
     }

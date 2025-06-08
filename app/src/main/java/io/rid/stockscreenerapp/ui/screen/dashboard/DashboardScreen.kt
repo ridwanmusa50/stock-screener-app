@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ fun DashboardScreen(dashboardViewModel: DashboardViewModel = hiltViewModel(), on
     val uiState by dashboardViewModel.uiState.collectAsStateWithLifecycle()
     val tabs = remember { DashboardTabs.entries.toList() }
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
+    val coroutineScope = rememberCoroutineScope()
 
     // Clear focus when page changes
     LaunchedEffect(pagerState) {
@@ -81,7 +83,7 @@ fun DashboardScreen(dashboardViewModel: DashboardViewModel = hiltViewModel(), on
             uiState = uiState,
             pagerState = pagerState,
             tabs = tabs,
-            onTabSelected = { index -> dashboardViewModel.onTabSelected(index, pagerState) },
+            onTabSelected = { index -> dashboardViewModel.onTabSelected(index, pagerState, coroutineScope) },
             onSearch = dashboardViewModel::filterStocks,
             onRefresh = dashboardViewModel::fetchStocks,
             onStockSelected = onStockSelected,

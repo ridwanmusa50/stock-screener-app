@@ -1,5 +1,6 @@
 <resources>
     <string name = "app_name">Stock Screener App</string>
+    <string name = "chart.not_available">No chart data available</string>
     <string name = "internet.popup_title">Oopps!</string>
     <string name = "internet.popup_des">It seems something wrong with your internet connection. Please check your internet connection and try again.</string>
     <string name = "general.cancel">Cancel</string>
@@ -7,6 +8,7 @@
     <string name = "general.okay">Okay</string>
     <string name = "general.stocks">Stocks</string>
     <string name = "general.watchlist">Watchlist</string>
+    <string name = "general.not_available">Not available</string>
     <string name = "logout">Logout</string>
     <string name = "logout.popup_title">Are you sure want to logout?</string>
     <string name = "placeholder.search_stock">Search for stock</string>
@@ -14,4 +16,9 @@
     <string name = "server.service_unavailable">Service temporarily unavailable</string>
     <string name = "snackbar.add_msg">Added to Watchlist</string>
     <string name = "snackbar.remove_msg">Removed from Watchlist</string>
+    <string name = "stock.dividend_yield">Dividend Yield</string>
+    <string name = "stock.inception_date">Inception Date</string>
+    <string name = "stock.highest_six_month">Highest in 6 Months</string>
+    <string name = "stock.lowest_six_month">Lowest in 6 Months</string>
+    <string name = "stock.net_assets">Net Assets</string>
 </resources>

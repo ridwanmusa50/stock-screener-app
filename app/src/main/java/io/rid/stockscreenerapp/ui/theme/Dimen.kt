@@ -63,6 +63,7 @@ object Dimen {
         val tabIconDefault = 24.dp
         val tabIconExpanded = 28.dp
         val icStar = 40.dp
+        val chartHeight = 500.dp
     }
 
     object Spacing {
@@ -83,12 +84,7 @@ object Dimen {
         val spacing90 = 90.dp
         val spacing130 = 130.dp
 
-        val spacingNegative10 = (-10).dp
-        val spacingNegative12 = (-12).dp
-        val spacingNegative16 = (-16).dp
-        val spacingNegative20 = (-20).dp
-        val spacingNegative24 = (-24).dp
-        val spacingNegative36 = (-36).dp
+        val spacingBetweenGraphDot = 60.dp
     }
 
     object StrokeWidth {

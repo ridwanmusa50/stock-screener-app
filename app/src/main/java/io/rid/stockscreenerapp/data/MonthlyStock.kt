@@ -3,8 +3,8 @@ package io.rid.stockscreenerapp.data
 import com.google.gson.annotations.SerializedName
 
 data class MonthlyStock(
-    @SerializedName("Meta Data") val metaData: MetaData = MetaData(),
-    @SerializedName("Monthly Time Series") val monthlyTimeSeries: Map<String, TimeSeriesData> = emptyMap()
+    @SerializedName("Meta Data") val metaData: MetaData,
+    @SerializedName("Monthly Time Series") val monthlyTimeSeries: Map<String, TimeSeriesData>
 )
 
 data class MetaData(
