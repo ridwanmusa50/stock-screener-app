@@ -1,7 +1,6 @@
 package io.rid.stockscreenerapp.ui.screen.dashboard
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -71,8 +70,6 @@ fun DashboardScreen(
             .distinctUntilChanged()
             .collect { focusManager.clearFocus(force = true) }
     }
-
-    Log.d("masuk", isEditWatchlist.toString())
 
     LaunchedEffect(isEditWatchlist) {
         if (isEditWatchlist == true) dashboardViewModel.fetchStocks()

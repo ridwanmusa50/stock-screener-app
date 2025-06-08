@@ -154,27 +154,6 @@ private fun PreviewAppNoInternetDialog() {
 
 @Composable
 fun AppSingleBtnDialog(
-    @StringRes btnLblResId: Int,
-    @StringRes msgResId: Int? = null,
-    @StringRes titleResId: Int? = null,
-    @DrawableRes iconResId: Int? = null,
-    isDismissible: Boolean = false,
-    isPreview: Boolean = false,
-    onBtnClick: () -> Unit,
-) {
-    AppTwoBtnDialog(
-        positiveBtnLblResId = btnLblResId,
-        msgResId = msgResId,
-        iconResId = iconResId,
-        titleResId = titleResId,
-        isDismissible = isDismissible,
-        isPreview = isPreview,
-        onPositiveBtnClick = onBtnClick
-    )
-}
-
-@Composable
-fun AppSingleBtnDialog(
     btnLbl: String,
     msg: CharSequence? = null,
     title: CharSequence? = null,

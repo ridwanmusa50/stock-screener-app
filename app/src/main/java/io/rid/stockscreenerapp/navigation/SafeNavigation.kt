@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 object SafeNavigation {

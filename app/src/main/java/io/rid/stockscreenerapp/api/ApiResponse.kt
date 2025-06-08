@@ -3,6 +3,7 @@ package io.rid.stockscreenerapp.api
 import io.rid.stockscreenerapp.ui.util.Const
 import java.net.HttpURLConnection
 
+@Suppress("unused")
 sealed class ApiResponse<out T> {
 
     // 200
@@ -24,7 +25,6 @@ sealed class ApiResponse<out T> {
 
     open class Err : ApiResponse<Nothing>()
 
-    @Suppress("UNUSED_PARAMETER")
     class ExceptionErr(e: Throwable) : Err()
 
 }

@@ -28,7 +28,6 @@ import io.rid.stockscreenerapp.ui.theme.verticalExitTransition
 import io.rid.stockscreenerapp.ui.theme.verticalPopEnterTransition
 import io.rid.stockscreenerapp.ui.theme.verticalPopExitTransition
 import io.rid.stockscreenerapp.ui.util.Const
-import kotlin.text.set
 
 val LocalNavController = staticCompositionLocalOf<NavHostController> { error("No NavController provided") }
 

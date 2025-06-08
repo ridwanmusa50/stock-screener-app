@@ -17,18 +17,6 @@ object Dimen {
         val cornerRadius16 = 16.dp
         val cornerRadius18 = 18.dp
         val cornerRadius20 = 20.dp
-
-        val cornerRadiusInfinite = 1000.dp
-    }
-
-    object Divider {
-        val divider1 = 1.dp
-        val divider2 = 2.dp
-    }
-
-    object DrawablePadding {
-        val drawablePadding4 = 4.dp
-        val drawablePadding6 = 6.dp
     }
 
     object Elevation {
@@ -87,11 +75,6 @@ object Dimen {
         val spacingBetweenGraphDot = 60.dp
     }
 
-    object StrokeWidth {
-        val strokeWidth1 = 1.dp
-        val strokeWidth3 = 3.dp
-    }
-
     object TxtSize {
         val txtSize4 = 4.sp
         val txtSize8 = 8.sp
@@ -105,11 +88,6 @@ object Dimen {
         val txtSize24 = 24.sp
         val txtSize26 = 26.sp
         val txtSize30 = 30.sp
-    }
-
-    // Component with specific width or height
-    object WidthHeight {
-
     }
 
 }
