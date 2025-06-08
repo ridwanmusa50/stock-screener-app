@@ -73,13 +73,23 @@ class DashboardViewModel @Inject constructor(
                     }
 
                     _uiState.update {
-                        it.copy(isLoading = false, stocks = stocks, err = null)
+                        it.copy(
+                            isLoading = false,
+                            originalStocks = stocks,
+                            filteredStocks = stocks,
+                            err = null
+                        )
                     }
                 }
 
                 is ApiResponse.Err -> {
                     _uiState.update {
-                        it.copy(isLoading = false, stocks = emptyList(), err = result)
+                        it.copy(
+                            isLoading = false,
+                            originalStocks = emptyList(),
+                            filteredStocks = emptyList(),
+                            err = result
+                        )
                     }
                 }
             }
@@ -87,29 +97,57 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun filterStocks(query: String) {
-        val stocks = _uiState.value.stocks
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentState = _uiState.value
 
-        // Filter only after stocks loaded
-        if (stocks.isNotEmpty()) {
-            viewModelScope.launch(Dispatchers.IO) {
-                when (val result = repository.filterStocks(query)) {
-                    is ApiResponse.Success -> {
-                        val remoteFilteredStocks = result.data.filteredResults
+            // If query is empty, show all original stocks
+            if (query.isEmpty()) {
+                _uiState.update {
+                    it.copy(filteredStocks = it.originalStocks, err = null)
+                }
+                return@launch
+            }
 
-                        val filteredStocks = if (remoteFilteredStocks != null && remoteFilteredStocks.isNotEmpty()) {
-                            remoteFilteredStocks.map { remoteFilteredStock ->
-                                val localStock = stocks.firstOrNull { it.symbol == remoteFilteredStock.symbol }
-                                Stock(remoteFilteredStock.symbol, remoteFilteredStock.name, localStock?.isStarred == true)
-                            }.sortedBy { it.symbol }
-                        } else {
-                            filterFromListingStock(query)
-                        }
+            // First try to filter from remote
+            when (val result = repository.filterStocks(query)) {
+                is ApiResponse.Success -> {
+                    val remoteFilteredStocks = result.data.filteredResults
 
-                        _uiState.update { it.copy(stocks = filteredStocks, err = null) }
+                    val filteredStocks = if (remoteFilteredStocks != null && remoteFilteredStocks.isNotEmpty()) {
+                        remoteFilteredStocks.map { remoteFilteredStock ->
+                            val localStock = currentState.originalStocks.firstOrNull {
+                                it.symbol == remoteFilteredStock.symbol
+                            }
+                            Stock(
+                                remoteFilteredStock.symbol,
+                                remoteFilteredStock.name,
+                                localStock?.isStarred == true
+                            )
+                        }.sortedBy { it.symbol }
+                    } else {
+                        // Fallback to local filtering if remote fails or returns empty
+                        currentState.originalStocks.filter {
+                            it.symbol.contains(query, ignoreCase = true)
+                        }.sortedBy { it.symbol }
                     }
 
-                    is ApiResponse.Err -> {
-                        _uiState.update { it.copy(stocks = emptyList(), err = result) }
+                    _uiState.update {
+                        it.copy(filteredStocks = filteredStocks, err = null)
+                    }
+                }
+
+                is ApiResponse.Err -> {
+                    // Fallback to local filtering if remote fails
+                    val filteredStocks = currentState.originalStocks.filter {
+                        it.symbol.contains(query, ignoreCase = true) ||
+                                it.name.contains(query, ignoreCase = true)
+                    }.sortedBy { it.symbol }
+
+                    _uiState.update {
+                        it.copy(
+                            filteredStocks = filteredStocks,
+                            err = result
+                        )
                     }
                 }
             }
@@ -122,13 +160,13 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             dao.updateStarredStock(stock.symbol, newStarredState)
 
-            val updatedList = _uiState.value.stocks.map {
+            val updatedList = _uiState.value.originalStocks.map {
                 if (it.symbol == stock.symbol) it.copy(isStarred = newStarredState) else it
             }
 
             _uiState.update { state ->
                 state.copy(
-                    stocks = updatedList,
+                    originalStocks = updatedList,
                     lastStarredAction = if (newStarredState) StarredAction.STARRED else StarredAction.UNSTARRED
                 )
             }
@@ -148,19 +186,6 @@ class DashboardViewModel @Inject constructor(
     // Collect from room database
     private suspend fun loadStockFromRoomDb(): List<Stock>? {
         return dao.getStocks()
-    }
-
-    // Filter using stocks in local
-    private fun filterFromListingStock(query: String): List<Stock> {
-        val stocks = _uiState.value.stocks
-
-        return if (query.isEmpty()) {
-            stocks
-        } else {
-            stocks.filter {
-                it.symbol.contains(query, ignoreCase = true)
-            }.sortedBy { it.symbol }
-        }
     }
 
     // Combine stocks with isStarred value from room database

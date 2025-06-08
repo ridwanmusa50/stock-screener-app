@@ -125,8 +125,8 @@ private fun StockList(
         onRefresh = onRefresh
     ) {
         LazyColumn {
-            items(count = uiState.stocks.size) { index ->
-                val stock = uiState.stocks[index]
+            items(count = uiState.filteredStocks.size) { index ->
+                val stock = uiState.filteredStocks[index]
                 StockMarketItem(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
             }
         }
@@ -202,7 +202,7 @@ private fun StockMarketItem(
 @Composable
 private fun PreviewStockMarketScreen() {
     val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
-    val uiState = DashboardUiState(stocks = stocks)
+    val uiState = DashboardUiState(filteredStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
     val modifier = Modifier
@@ -237,7 +237,7 @@ private fun PreviewSearchBarFilled() {
 @Composable
 private fun PreviewStockListLoading() {
     val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
-    val uiState = DashboardUiState(stocks = stocks)
+    val uiState = DashboardUiState(filteredStocks = stocks)
 
     StockList(
         uiState = uiState,

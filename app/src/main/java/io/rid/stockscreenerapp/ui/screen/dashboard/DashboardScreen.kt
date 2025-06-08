@@ -181,8 +181,8 @@ private fun DashboardPager(
     onStockSelected: (Stock) -> Unit,
     onStockStarred: (Stock) -> Unit
 ) {
-    val starredStock by remember(uiState.stocks) {
-        derivedStateOf { uiState.stocks.filter { it.isStarred } }
+    val starredStock by remember(uiState.originalStocks) {
+        derivedStateOf { uiState.originalStocks.filter { it.isStarred } }
     }
 
     val modifier = Modifier
@@ -245,7 +245,7 @@ private fun DashboardSnackBar(
 @Composable
 private fun PreviewDashboardContent() {
     val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
-    val uiState = DashboardUiState(stocks = stocks)
+    val uiState = DashboardUiState(originalStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
 
@@ -281,7 +281,7 @@ private fun PreviewDashboardTabs() {
 @Composable
 private fun PreviewDashboardPager() {
     val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
-    val uiState = DashboardUiState(stocks = stocks)
+    val uiState = DashboardUiState(originalStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
 
