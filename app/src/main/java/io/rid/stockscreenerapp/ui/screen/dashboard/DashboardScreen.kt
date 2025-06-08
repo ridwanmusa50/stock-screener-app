@@ -1,6 +1,7 @@
 package io.rid.stockscreenerapp.ui.screen.dashboard
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -50,7 +51,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun DashboardScreen(dashboardViewModel: DashboardViewModel = hiltViewModel(), onStockSelected: (Stock) -> Unit) {
+fun DashboardScreen(
+    isEditWatchlist: Boolean? = null,
+    dashboardViewModel: DashboardViewModel = hiltViewModel(),
+    onStockSelected: (Stock) -> Unit
+) {
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
 
@@ -65,6 +70,12 @@ fun DashboardScreen(dashboardViewModel: DashboardViewModel = hiltViewModel(), on
         snapshotFlow { pagerState.currentPage }
             .distinctUntilChanged()
             .collect { focusManager.clearFocus(force = true) }
+    }
+
+    Log.d("masuk", isEditWatchlist.toString())
+
+    LaunchedEffect(isEditWatchlist) {
+        if (isEditWatchlist == true) dashboardViewModel.fetchStocks()
     }
 
     // Show SnackBar when a stock is starred/unstarred

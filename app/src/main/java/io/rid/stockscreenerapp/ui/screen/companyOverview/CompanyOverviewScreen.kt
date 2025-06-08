@@ -28,7 +28,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -55,7 +57,6 @@ import io.rid.stockscreenerapp.data.MetaData
 import io.rid.stockscreenerapp.data.MonthlyStock
 import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.data.TimeSeriesData
-import io.rid.stockscreenerapp.navigation.LocalNavController
 import io.rid.stockscreenerapp.ui.component.AppErrDialog
 import io.rid.stockscreenerapp.ui.component.AppImageBtn
 import io.rid.stockscreenerapp.ui.component.AppLoadingDialog
@@ -80,13 +81,14 @@ fun CompanyOverviewScreen(
     symbol: String,
     name: String,
     isStarred: Boolean,
+    onBackPreviousScreen: (Boolean) -> Unit,
     companyOverviewViewModel: CompanyOverviewViewModel = hiltViewModel(),
 ) {
-    val navController = LocalNavController.current
     val context = LocalContext.current
 
     val uiState by companyOverviewViewModel.uiState.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
+    var isEditWatchlist by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         companyOverviewViewModel.initialize(symbol)
@@ -115,8 +117,11 @@ fun CompanyOverviewScreen(
     ) {
         CompanyOverviewContent(
             uiState = uiState,
-            onCloseClick = { navController.popBackStack() },
-            onStockStarred = { stock -> companyOverviewViewModel.updateStockStar(stock) }
+            onCloseClick = { onBackPreviousScreen(isEditWatchlist) },
+            onStockStarred = { stock ->
+                companyOverviewViewModel.updateStockStar(stock)
+                isEditWatchlist = true
+            }
         )
     }
 }

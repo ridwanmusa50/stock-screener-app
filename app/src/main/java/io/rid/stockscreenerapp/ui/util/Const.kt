@@ -21,4 +21,8 @@ object Const {
         val IS_DEVELOPMENT_DEBUG_BUILD = BuildConfig.BUILD_TYPE.contains("developmentDebug")
     }
 
+    object NavigationKey {
+        const val IS_EDIT_WATCHLIST = "IS_EDIT_WATCHLIST"
+    }
+
 }

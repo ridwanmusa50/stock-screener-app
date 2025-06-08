@@ -27,6 +27,8 @@ import io.rid.stockscreenerapp.ui.theme.verticalEnterTransition
 import io.rid.stockscreenerapp.ui.theme.verticalExitTransition
 import io.rid.stockscreenerapp.ui.theme.verticalPopEnterTransition
 import io.rid.stockscreenerapp.ui.theme.verticalPopExitTransition
+import io.rid.stockscreenerapp.ui.util.Const
+import kotlin.text.set
 
 val LocalNavController = staticCompositionLocalOf<NavHostController> { error("No NavController provided") }
 
@@ -44,7 +46,9 @@ fun AppNavHost() {
             }
 
             setupScreen<Screen.Dashboard> {
-                DashboardScreen { stock ->
+                val isEditWatchlist = SafeNavigation.Nav.consume<Boolean>(navController, Const.NavigationKey.IS_EDIT_WATCHLIST)
+
+                DashboardScreen(isEditWatchlist = isEditWatchlist) { stock ->
                     navController.navigate(
                         Screen.StockOverview(
                             symbol = stock.symbol,
@@ -60,7 +64,15 @@ fun AppNavHost() {
                 val name = it.toRoute<Screen.StockOverview>().name
                 val isStarred = it.toRoute<Screen.StockOverview>().isStarred
 
-                CompanyOverviewScreen(symbol = symbol, name = name, isStarred = isStarred)
+                CompanyOverviewScreen(
+                    symbol = symbol,
+                    name = name,
+                    isStarred = isStarred,
+                    onBackPreviousScreen = { isEditWatchlist ->
+                        SafeNavigation.Nav.set(navController, Const.NavigationKey.IS_EDIT_WATCHLIST, isEditWatchlist)
+                        navController.popBackStack()
+                    }
+                )
             }
         }
 
