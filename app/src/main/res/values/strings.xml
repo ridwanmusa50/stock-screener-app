@@ -18,7 +18,7 @@
     <string name = "snackbar.remove_msg">Removed from Watchlist</string>
     <string name = "stock.dividend_yield">Dividend Yield</string>
     <string name = "stock.inception_date">Inception Date</string>
-    <string name = "stock.highest_six_month">Highest in 6 Months</string>
-    <string name = "stock.lowest_six_month">Lowest in 6 Months</string>
+    <string name = "stock.highest_six_month">Highest in 12 Months</string>
+    <string name = "stock.lowest_six_month">Lowest in 12 Months</string>
     <string name = "stock.net_assets">Net Assets</string>
 </resources>
