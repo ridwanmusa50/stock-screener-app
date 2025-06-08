@@ -7,6 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,7 +23,7 @@ import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import coil.request.ImageRequest
 import io.rid.stockscreenerapp.R
-import io.rid.stockscreenerapp.ui.theme.Dimen
+import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
 import io.rid.stockscreenerapp.ui.theme.blue01010
 import io.rid.stockscreenerapp.ui.util.ThrottleEvent
 import io.rid.stockscreenerapp.ui.util.get
@@ -78,7 +82,7 @@ fun AppImageBtn(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(
                     bounded = false,
-                    radius = Dimen.Spacing.spacing16,
+                    radius = Spacing.spacing16,
                     color = blue01010
                 ),
                 onClick = {
@@ -90,7 +94,7 @@ fun AppImageBtn(
         AppLoadImage(
             imageUrl = imageUrl,
             imageResId = imageResId,
-            modifier = imageModifier.padding(all = Dimen.Spacing.spacing8),
+            modifier = imageModifier.padding(all = Spacing.spacing8),
             placeholderResId = placeholderResId,
             contentScale = contentScale
         )
@@ -101,4 +105,24 @@ fun AppImageBtn(
 @Composable
 private fun PreviewImageBtn() {
     AppImageBtn(imageResId = R.drawable.ic_launcher_foreground, onClick = { })
+}
+
+@Composable
+fun AppSnackBar(snackBarHostState: SnackbarHostState) {
+    SnackbarHost(snackBarHostState) { data ->
+        Snackbar(
+            modifier = Modifier.padding(Spacing.spacing16),
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            actionColor = MaterialTheme.colorScheme.primary,
+            snackbarData = data
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewAppSnackBar() {
+    val snackBarHostState = remember { SnackbarHostState() }
+    AppSnackBar(snackBarHostState)
 }

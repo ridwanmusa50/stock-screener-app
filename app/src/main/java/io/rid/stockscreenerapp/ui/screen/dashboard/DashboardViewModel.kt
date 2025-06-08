@@ -1,10 +1,7 @@
 package io.rid.stockscreenerapp.ui.screen.dashboard
 
 import android.content.Context
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,9 +12,8 @@ import io.rid.stockscreenerapp.api.Repository
 import io.rid.stockscreenerapp.data.ListingStock
 import io.rid.stockscreenerapp.data.Stock
 import io.rid.stockscreenerapp.database.Dao
-import io.rid.stockscreenerapp.ui.util.parseStockCsv
-import io.rid.stockscreenerapp.ui.util.readCsvFromRaw
-import kotlinx.coroutines.CoroutineScope
+import io.rid.stockscreenerapp.ui.util.Utils.parseStockCsv
+import io.rid.stockscreenerapp.ui.util.Utils.readCsvFromRaw
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,18 +21,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-@Stable
-enum class DashboardTabs(@StringRes val titleResId: Int, @DrawableRes val iconResId: Int) {
-    STOCK_MARKET(R.string.general_stocks, R.drawable.ic_stock_market),
-    WATCHLIST(R.string.general_watchlist, R.drawable.ic_watchlist)
-}
-
-// Track the last starred action
-sealed class StarredAction {
-    object STARRED : StarredAction()
-    object UNSTARRED : StarredAction()
-}
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -48,23 +32,27 @@ class DashboardViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DashboardUiState())
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
-    private val localStocks = MutableStateFlow<List<Stock>>(emptyList())
+    init {
+        fetchStocks()
+    }
 
     fun fetchStocks() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, err = null) }
 
-            val result = repository.getStocks()
-            val stocks = when (result) {
+            when ( val result = repository.getStocks()) {
                 is ApiResponse.Success -> {
-                    val csvContent = result.data.string()
-                    val parsed = parseStockCsv(csvContent)
-                    val stocksFromDb = loadStockFromRoomDb().orEmpty() // avoid null
+                    val apiCsvContent = result.data.string()
+                    val apiCsvListingStocks = parseStockCsv(apiCsvContent)
 
-                    when {
-                        parsed.isNotEmpty() -> {
+                    val stocksFromDb = loadStockFromRoomDb().orEmpty()
+
+                    // Collect stocks from: api > room database > local csv file
+                    val stocks = when {
+                        apiCsvListingStocks.isNotEmpty() -> {
                             // Map parsed stocks with isStarred from local DB
-                            val mergedStocks = mergeWithLocal(parsed, stocksFromDb)
+                            val mergedStocks = mergeWithLocal(apiCsvListingStocks, stocksFromDb)
+
                             dao.insertStocks(mergedStocks)
                             mergedStocks
                         }
@@ -74,50 +62,54 @@ class DashboardViewModel @Inject constructor(
                         }
 
                         else -> {
-                            val fallbackContent = readCsvFromRaw(context, R.raw.listing_status)
-                            val fallbackStocks = parseStockCsv(fallbackContent)
-                            val mergedStocks = mergeWithLocal(fallbackStocks, stocksFromDb)
+                            val localCsvContent = readCsvFromRaw(context, R.raw.listing_status)
+                            val localCsvListingStocks = parseStockCsv(localCsvContent)
+                            val mergedStocks = mergeWithLocal(localCsvListingStocks, stocksFromDb)
 
                             dao.insertStocks(mergedStocks)
                             mergedStocks
                         }
                     }
+
+                    _uiState.update {
+                        it.copy(isLoading = false, stocks = stocks, err = null)
+                    }
                 }
 
-                is ApiResponse.Err -> loadStockFromRoomDb()
-            }
-
-            if (stocks != null) localStocks.value = stocks
-
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    stocks = stocks ?: emptyList(),
-                    err = if (stocks == null) result as? ApiResponse.Err else null
-                )
+                is ApiResponse.Err -> {
+                    _uiState.update {
+                        it.copy(isLoading = false, stocks = emptyList(), err = result)
+                    }
+                }
             }
         }
     }
 
     fun filterStocks(query: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            when (val result = repository.filterStocks(query)) {
-                is ApiResponse.Success -> {
-                    val filteredStock = result.data.filteredResults
-                    val stocks = if (filteredStock != null && filteredStock.isNotEmpty()) {
-                        filteredStock.map { remoteStock ->
-                            val localStock = localStocks.value.firstOrNull { it.symbol == remoteStock.symbol }
-                            Stock(remoteStock.symbol, remoteStock.name, localStock?.isStarred == true)
-                        }.sortedBy { it.symbol }
-                    } else {
-                        filterFromListingStock(query)
+        val stocks = _uiState.value.stocks
+
+        // Filter only after stocks loaded
+        if (stocks.isNotEmpty()) {
+            viewModelScope.launch(Dispatchers.IO) {
+                when (val result = repository.filterStocks(query)) {
+                    is ApiResponse.Success -> {
+                        val remoteFilteredStocks = result.data.filteredResults
+
+                        val filteredStocks = if (remoteFilteredStocks != null && remoteFilteredStocks.isNotEmpty()) {
+                            remoteFilteredStocks.map { remoteFilteredStock ->
+                                val localStock = stocks.firstOrNull { it.symbol == remoteFilteredStock.symbol }
+                                Stock(remoteFilteredStock.symbol, remoteFilteredStock.name, localStock?.isStarred == true)
+                            }.sortedBy { it.symbol }
+                        } else {
+                            filterFromListingStock(query)
+                        }
+
+                        _uiState.update { it.copy(stocks = filteredStocks, err = null) }
                     }
 
-                    _uiState.update { it.copy(stocks = stocks) }
-                }
-
-                is ApiResponse.Err -> {
-                    _uiState.update { it.copy(err = result) }
+                    is ApiResponse.Err -> {
+                        _uiState.update { it.copy(stocks = emptyList(), err = result) }
+                    }
                 }
             }
         }
@@ -129,11 +121,9 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             dao.updateStarredStock(stock.symbol, newStarredState)
 
-            val updatedList = localStocks.value.map {
+            val updatedList = _uiState.value.stocks.map {
                 if (it.symbol == stock.symbol) it.copy(isStarred = newStarredState) else it
             }
-
-            localStocks.value = updatedList
 
             _uiState.update { state ->
                 state.copy(
@@ -144,8 +134,8 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun onTabSelected(index: Int, pagerState: PagerState, coroutineScope: CoroutineScope) {
-        coroutineScope.launch {
+    fun onTabSelected(index: Int, pagerState: PagerState) {
+        viewModelScope.launch {
             pagerState.animateScrollToPage(index)
         }
     }
@@ -154,20 +144,25 @@ class DashboardViewModel @Inject constructor(
         _uiState.update { it.copy(lastStarredAction = null) }
     }
 
+    // Collect from room database
     private suspend fun loadStockFromRoomDb(): List<Stock>? {
         return dao.getStocks()
     }
 
+    // Filter using stocks in local
     private fun filterFromListingStock(query: String): List<Stock> {
+        val stocks = _uiState.value.stocks
+
         return if (query.isEmpty()) {
-            localStocks.value
+            stocks
         } else {
-            localStocks.value.filter {
+            stocks.filter {
                 it.symbol.contains(query, ignoreCase = true)
             }.sortedBy { it.symbol }
         }
     }
 
+    // Combine stocks with isStarred value from room database
     private fun mergeWithLocal(listingStocks: List<ListingStock>, stock: List<Stock>): List<Stock> {
         return listingStocks.map { listingStock ->
             val localStock = stock.firstOrNull { it.symbol == listingStock.symbol }
@@ -178,6 +173,5 @@ class DashboardViewModel @Inject constructor(
             )
         }.sortedBy { it.symbol }
     }
-
 
 }

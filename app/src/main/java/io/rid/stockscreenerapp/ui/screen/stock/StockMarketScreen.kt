@@ -1,5 +1,6 @@
 package io.rid.stockscreenerapp.ui.screen.stock
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -10,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.rid.stockscreenerapp.R
@@ -41,6 +43,7 @@ import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardTabs
 import io.rid.stockscreenerapp.ui.screen.dashboard.DashboardUiState
 import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.Dimen.Spacing
+import io.rid.stockscreenerapp.ui.theme.fullRoundedCornerShape
 import io.rid.stockscreenerapp.ui.util.Const.Common
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -60,8 +63,6 @@ fun StockMarketScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(Unit) { onRefresh() }
-
     // Reset search on tab switch
     LaunchedEffect(Unit) {
         snapshotFlow { query }
@@ -77,10 +78,8 @@ fun StockMarketScreen(
     }
 
     Column(modifier = modifier.navigationBarsPadding()) {
-        SearchBar(
-            query = query,
-            onQueryChanged = { query = it }
-        )
+        SearchBar(query = query, onQueryChanged = { query = it })
+
         StockList(
             uiState = uiState,
             onRefresh = onRefresh,
@@ -112,7 +111,6 @@ private fun SearchBar(query: String, onQueryChanged: (String) -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StockList(
     uiState: DashboardUiState,
@@ -129,14 +127,14 @@ private fun StockList(
         LazyColumn {
             items(count = uiState.stocks.size) { index ->
                 val stock = uiState.stocks[index]
-                StockMarket(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
+                StockMarketItem(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
             }
         }
     }
 }
 
 @Composable
-private fun StockMarket(
+private fun StockMarketItem(
     stock: Stock,
     onStockSelected: (Stock) -> Unit,
     onStockStarred: (Stock) -> Unit
@@ -174,7 +172,11 @@ private fun StockMarket(
                     top.linkTo(txtSymbol.bottom)
                     width = Dimension.fillToConstraints
                 }
-                .padding(start = Spacing.spacing8, end = Spacing.spacing4, bottom = Spacing.spacing8),
+                .padding(
+                    start = Spacing.spacing8,
+                    end = Spacing.spacing4,
+                    bottom = Spacing.spacing8
+                ),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -192,3 +194,71 @@ private fun StockMarket(
         )
     }
 }
+
+// region Preview
+// =============================================================================================================
+
+@Preview
+@Composable
+private fun PreviewStockMarketScreen() {
+    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val uiState = DashboardUiState(stocks = stocks)
+    val tabs = DashboardTabs.entries.toList()
+    val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
+    val modifier = Modifier
+        .fillMaxSize()
+        .background(color = Color.White, shape = fullRoundedCornerShape.extraLarge)
+        .padding(top = Spacing.spacing16)
+
+    StockMarketScreen(
+        uiState = uiState,
+        pagerState = pagerState,
+        modifier = modifier,
+        onRefresh = { },
+        onSearch = { },
+        onStockSelected = { },
+        onStockStarred = { }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewSearchBarDefault() {
+    SearchBar(query = "", onQueryChanged = { })
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewSearchBarFilled() {
+    SearchBar(query = "KFC", onQueryChanged = { })
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewStockListLoading() {
+    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val uiState = DashboardUiState(stocks = stocks)
+
+    StockList(
+        uiState = uiState,
+        onRefresh = { },
+        onStockSelected = { },
+        onStockStarred = { }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewStockMarketItemDefault() {
+    val stock = Stock("MB", "Marrybrown")
+    StockMarketItem(stock = stock, onStockSelected = { }, onStockStarred = { })
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewStockMarketItemStarred() {
+    val stock = Stock("KFC", "Kentucky Fried Chicken", true)
+    StockMarketItem(stock = stock, onStockSelected = { }, onStockStarred = { })
+}
+
+// endregion ===================================================================================================

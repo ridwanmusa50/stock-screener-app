@@ -6,9 +6,8 @@ sealed class Screen {
 
     @Serializable data object Splash : Screen()
 
-    @Serializable data object Main : Screen()
     @Serializable data object Dashboard : Screen()
-    @Serializable data object Stock : Screen()
-    @Serializable data object Watchlist : Screen()
+
+    @Serializable data class StockOverview(val symbol: String, val name: String, val isStarred: Boolean) : Screen()
 
 }

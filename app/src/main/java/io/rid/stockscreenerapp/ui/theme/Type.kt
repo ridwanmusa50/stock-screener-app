@@ -18,7 +18,7 @@ private val AppFontFamily = FontFamily(
 
 internal val AppTypography = Typography(
     headlineLarge = TextStyle(
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.W700,
         fontFamily = AppFontFamily,
         fontSize = Dimen.TxtSize.txtSize30,
         lineHeight = Dimen.LineHeight.lineHeight40,
@@ -26,7 +26,7 @@ internal val AppTypography = Typography(
         color = gray02100
     ),
     headlineMedium = TextStyle(
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.W700,
         fontFamily = AppFontFamily,
         fontSize = Dimen.TxtSize.txtSize26,
         lineHeight = Dimen.LineHeight.lineHeight36,
@@ -35,7 +35,7 @@ internal val AppTypography = Typography(
     ),
     headlineSmall = TextStyle(
         fontFamily = AppFontFamily,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.W700,
         fontSize = Dimen.TxtSize.txtSize24,
         lineHeight = Dimen.LineHeight.lineHeight32,
         letterSpacing = Dimen.LetterSpacing.letterSpacing0,

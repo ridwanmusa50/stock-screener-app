@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import io.rid.stockscreenerapp.R
@@ -93,3 +94,15 @@ private fun WatchlistItem(
         )
     }
 }
+
+// region Preview
+// =============================================================================================================
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewSWatchlistItem() {
+    val stock = Stock("KFC", "Kentucky Fried Chicken", true)
+    WatchlistItem(stock = stock, onStockSelected = { }, onStockStarred = { })
+}
+
+// endregion ===================================================================================================

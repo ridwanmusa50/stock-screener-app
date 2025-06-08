@@ -1,5 +1,6 @@
 package io.rid.stockscreenerapp.ui.component
 
+import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
@@ -33,6 +34,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import io.rid.stockscreenerapp.R
+import io.rid.stockscreenerapp.api.ApiResponse
+import io.rid.stockscreenerapp.network.LocalIsNetworkAvailable
 import io.rid.stockscreenerapp.ui.theme.AppTypography
 import io.rid.stockscreenerapp.ui.theme.Dimen
 import io.rid.stockscreenerapp.ui.theme.alertDialogFullVerticalEnterTransition
@@ -41,6 +44,7 @@ import io.rid.stockscreenerapp.ui.theme.alertDialogVerticalExitTransition
 import io.rid.stockscreenerapp.ui.theme.blue01100
 import io.rid.stockscreenerapp.ui.theme.fullRoundedCornerShape
 import io.rid.stockscreenerapp.ui.theme.gray01100
+import io.rid.stockscreenerapp.ui.util.Utils.getResponseErrMsg
 
 enum class DialogButtonType { POSITIVE, NEGATIVE, NONE }
 
@@ -77,53 +81,67 @@ private fun PreviewAppLoadingDialog() {
 }
 
 @Composable
-fun AppNoInternetDialog(isShowingDialog : Boolean = false) {
+fun AppNoInternetDialog(isShowingDialog: Boolean = false) {
     val transitionState = remember { MutableTransitionState(isShowingDialog) }
 
+    // Animate visibility when isShowingDialog changes
     LaunchedEffect(isShowingDialog) {
         transitionState.targetState = isShowingDialog
     }
 
-    AnimatedVisibility(
-        visibleState = transitionState,
-        enter = alertDialogFullVerticalEnterTransition(),
-        exit = alertDialogVerticalExitTransition()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Companion.White),
-            horizontalAlignment = Alignment.Companion.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    if (transitionState.currentState || transitionState.targetState) {
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
         ) {
-            AppLoadImage(
-                imageResId = R.drawable.ic_no_internet,
-                modifier = Modifier.padding(horizontal = Dimen.Spacing.spacing80)
-            )
+            AnimatedVisibility(
+                visibleState = transitionState,
+                enter = alertDialogFullVerticalEnterTransition(),
+                exit = alertDialogVerticalExitTransition()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    AppLoadImage(
+                        imageResId = R.drawable.ic_no_internet,
+                        modifier = Modifier.padding(horizontal = Dimen.Spacing.spacing80)
+                    )
 
-            AppTxt(
-                txtResId = R.string.internet_popup_title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Dimen.Spacing.spacing40, end = Dimen.Spacing.spacing40,
-                        top = Dimen.Spacing.spacing40
-                    ),
-                style = AppTypography.titleLarge,
-                txtAlign = TextAlign.Companion.Center
-            )
+                    AppTxt(
+                        txtResId = R.string.internet_popup_title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = Dimen.Spacing.spacing40,
+                                end = Dimen.Spacing.spacing40,
+                                top = Dimen.Spacing.spacing40
+                            ),
+                        style = AppTypography.titleLarge,
+                        txtAlign = TextAlign.Center
+                    )
 
-            AppTxt(
-                txtResId = R.string.internet_popup_des,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Dimen.Spacing.spacing40, end = Dimen.Spacing.spacing40,
-                        top = Dimen.Spacing.spacing20
-                    ),
-                style = AppTypography.bodyMedium.copy(color = gray01100),
-                txtAlign = TextAlign.Companion.Center
-            )
+                    AppTxt(
+                        txtResId = R.string.internet_popup_des,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = Dimen.Spacing.spacing40,
+                                end = Dimen.Spacing.spacing40,
+                                top = Dimen.Spacing.spacing20
+                            ),
+                        style = AppTypography.bodyMedium.copy(color = gray01100),
+                        txtAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
@@ -379,4 +397,29 @@ private fun PreviewAppTwoBtnDialog() {
         negativeBtnLbl = stringResource(id = R.string.general_cancel),
         isPreview = true
     )
+}
+
+@Composable
+fun AppErrDialog(
+    context: Context,
+    err: ApiResponse.Err,
+    title: CharSequence? = null,
+    @StringRes positiveBtnLblResId: Int? = null,
+    @StringRes negativeBtnLblResId: Int? = null,
+    isPreview: Boolean = false,
+    onDismiss: (() -> Unit)? = null
+) {
+    val errMsg = getResponseErrMsg(context, err, null)
+
+    if (LocalIsNetworkAvailable.current) {
+        AppTwoBtnDialog(
+            msg = errMsg,
+            title = title,
+            positiveBtnLbl = stringResource(positiveBtnLblResId ?: R.string.general_okay),
+            negativeBtnLbl = negativeBtnLblResId?.let { stringResource(it) },
+            isPreview = isPreview,
+            onDismiss = onDismiss
+        )
+    }
+
 }

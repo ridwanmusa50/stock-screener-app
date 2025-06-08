@@ -9,19 +9,18 @@ sealed class ApiResponse<out T> {
     data class Success<T>(val data: T) : ApiResponse<T>()
 
     // 400
-    open class BadRequest(errBody: String) : SingleMsgErr(HttpURLConnection.HTTP_BAD_REQUEST, errBody)
+    open class BadRequestErr(body: String) : SingleMsgErr(HttpURLConnection.HTTP_BAD_REQUEST, body)
 
     // 429
-    open class TooManyRequest(errBody: String) : SingleMsgErr(Const.ApiStatusCode.TOO_MANY_REQUESTS, errBody)
-
-    // 500
-    open class InternalServerErr(errBody: String) : SingleMsgErr(HttpURLConnection.HTTP_INTERNAL_ERROR, errBody)
+    open class TooManyRequestsErr(body: String) : SingleMsgErr(Const.ApiStatusCode.TOO_MANY_REQUESTS, body)
 
     open class TimeoutErr : Err()
 
     open class NoNetworkErr : Err()
 
-    open class SingleMsgErr(code: Int, errBody: String) : Err()
+    open class SingleMsgErr(statusCode: Int, errBody: String?) : Err()
+
+    open class ServerUnavailableErr(errBody: String) : SingleMsgErr(HttpURLConnection.HTTP_UNAVAILABLE, errBody)
 
     open class Err : ApiResponse<Nothing>()
 

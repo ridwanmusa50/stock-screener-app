@@ -48,9 +48,8 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
 
     private fun <T> onErr(code: Int, errBodyStr: String): ApiResponse<T> {
         return when (code) {
-            HttpURLConnection.HTTP_BAD_REQUEST -> fail(code, errBodyStr, "Bad Request", ApiResponse.BadRequest(errBodyStr))
-            Const.ApiStatusCode.TOO_MANY_REQUESTS -> fail(code, errBodyStr, "Too Many Request", ApiResponse.TooManyRequest(errBodyStr))
-            HttpURLConnection.HTTP_INTERNAL_ERROR -> fail(code, errBodyStr, "Internal Server Error", ApiResponse.InternalServerErr(errBodyStr))
+            HttpURLConnection.HTTP_BAD_REQUEST -> fail(code, errBodyStr, "Bad Request", ApiResponse.BadRequestErr(errBodyStr))
+            Const.ApiStatusCode.TOO_MANY_REQUESTS -> fail(code, errBodyStr, "Too Many Request", ApiResponse.TooManyRequestsErr(errBodyStr))
             else -> fail(code, errBodyStr, "Other", ApiResponse.SingleMsgErr(code, errBodyStr))
         }
     }
@@ -78,7 +77,7 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
     ): ApiResponse<T> {
         val isOffline = networkMonitor.connectionState.value == ConnectionState.Unavailable
 
-        return if (!isOffline) { // No network
+        return if (isOffline) { // No network
             fail(code, errBodyStr, "No Network", ApiResponse.NoNetworkErr(), e)
         } else {
             // Sometimes NetworkMonitorUtil.isOnline is set after the code here is reached,
@@ -86,7 +85,7 @@ class Repository(private val apiService: ApiService, private val networkMonitor:
             delay(1000L)
 
             @Suppress("KotlinConstantConditions")
-            if (!isOffline) { // No network
+            if (isOffline) { // No network
                 fail(code, errBodyStr, "No Network", ApiResponse.NoNetworkErr(), e)
             } else {
                 val errType: String
