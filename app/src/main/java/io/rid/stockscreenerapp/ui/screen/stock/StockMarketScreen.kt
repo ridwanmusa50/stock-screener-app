@@ -201,7 +201,10 @@ private fun StockMarketItem(
 @Preview
 @Composable
 private fun PreviewStockMarketScreen() {
-    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val stocks = listOf(
+        Stock(symbol = "MB", name = "Marrybrown"),
+        Stock(symbol = "KFC", name = "Kentucky Fried Chicken", isStarred = true)
+    )
     val uiState = DashboardUiState(filteredStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
@@ -236,7 +239,10 @@ private fun PreviewSearchBarFilled() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewStockListLoading() {
-    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val stocks = listOf(
+        Stock(symbol = "MB", name = "Marrybrown"),
+        Stock(symbol = "KFC", name = "Kentucky Fried Chicken", isStarred = true)
+    )
     val uiState = DashboardUiState(filteredStocks = stocks)
 
     StockList(
@@ -250,14 +256,14 @@ private fun PreviewStockListLoading() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewStockMarketItemDefault() {
-    val stock = Stock("MB", "Marrybrown")
+    val stock = Stock(symbol = "MB", name = "Marrybrown")
     StockMarketItem(stock = stock, onStockSelected = { }, onStockStarred = { })
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewStockMarketItemStarred() {
-    val stock = Stock("KFC", "Kentucky Fried Chicken", true)
+    val stock = Stock(symbol = "KFC", name = "Kentucky Fried Chicken", isStarred = true)
     StockMarketItem(stock = stock, onStockSelected = { }, onStockStarred = { })
 }
 

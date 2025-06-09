@@ -95,7 +95,8 @@ fun DashboardScreen(
             onSearch = dashboardViewModel::filterStocks,
             onRefresh = dashboardViewModel::fetchStocks,
             onStockSelected = onStockSelected,
-            onStockStarred = { stock -> dashboardViewModel.updateStockStar(stock) }
+            onStockStarred = { stock -> dashboardViewModel.updateStockStar(stock) },
+            onGetMonthlyDifference = { stocks -> dashboardViewModel.getMonthlyStock(stocks) }
         )
     }
 }
@@ -109,7 +110,8 @@ private fun DashboardContent(
     onSearch: (String) -> Unit,
     onRefresh: () -> Unit,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (Stock) -> Unit
+    onStockStarred: (Stock) -> Unit,
+    onGetMonthlyDifference: (List<Stock>) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -131,7 +133,8 @@ private fun DashboardContent(
             onSearch = onSearch,
             onRefresh = onRefresh,
             onStockSelected = onStockSelected,
-            onStockStarred = onStockStarred
+            onStockStarred = onStockStarred,
+            onGetMonthlyDifference = onGetMonthlyDifference
         )
     }
 }
@@ -187,7 +190,8 @@ private fun DashboardPager(
     onSearch: (String) -> Unit,
     onRefresh: () -> Unit,
     onStockSelected: (Stock) -> Unit,
-    onStockStarred: (Stock) -> Unit
+    onStockStarred: (Stock) -> Unit,
+    onGetMonthlyDifference: (List<Stock>) -> Unit
 ) {
     val starredStock by remember(uiState.originalStocks) {
         derivedStateOf { uiState.originalStocks.filter { it.isStarred } }
@@ -216,12 +220,14 @@ private fun DashboardPager(
                 onStockStarred = onStockStarred
             )
 
-            DashboardTabs.WATCHLIST -> WatchlistScreen(
-                stocks = starredStock,
-                modifier = modifier,
-                onStockSelected = onStockSelected,
-                onStockStarred = onStockStarred
-            )
+            DashboardTabs.WATCHLIST -> {
+                WatchlistScreen(
+                    stocks = starredStock,
+                    modifier = modifier,
+                    onStockSelected = onStockSelected,
+                    onGetMonthlyDifference = onGetMonthlyDifference
+                )
+            }
         }
     }
 }
@@ -252,7 +258,10 @@ private fun DashboardSnackBar(
 @Preview
 @Composable
 private fun PreviewDashboardContent() {
-    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val stocks = listOf(
+        Stock(symbol = "MB", name = "Marrybrown"),
+        Stock(symbol = "KFC", name = "Kentucky Fried Chicken", isStarred = true)
+    )
     val uiState = DashboardUiState(originalStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
@@ -266,7 +275,8 @@ private fun PreviewDashboardContent() {
             onSearch = { },
             onRefresh = { },
             onStockSelected = { },
-            onStockStarred = { }
+            onStockStarred = { },
+            onGetMonthlyDifference = { }
         )
     }
 }
@@ -288,7 +298,10 @@ private fun PreviewDashboardTabs() {
 @Preview
 @Composable
 private fun PreviewDashboardPager() {
-    val stocks = listOf(Stock("MB", "Marrybrown"), Stock("KFC", "Kentucky Fried Chicken", true))
+    val stocks = listOf(
+        Stock(symbol = "MB", name = "Marrybrown"),
+        Stock(symbol = "KFC", name = "Kentucky Fried Chicken", isStarred = true)
+    )
     val uiState = DashboardUiState(originalStocks = stocks)
     val tabs = DashboardTabs.entries.toList()
     val pagerState = rememberPagerState(initialPage = 0) { tabs.size }
@@ -301,7 +314,8 @@ private fun PreviewDashboardPager() {
             onSearch = { },
             onRefresh = { },
             onStockSelected = { },
-            onStockStarred = { }
+            onStockStarred = { },
+            onGetMonthlyDifference = { }
         )
     }
 }

@@ -10,5 +10,7 @@ data class Stock(
     @PrimaryKey
     val symbol: String,
     val name: String,
+    val currentPrice: String? = null,
+    val percentageChanges: String? = null,
     var isStarred: Boolean = false
 )

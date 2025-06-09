@@ -36,6 +36,9 @@ navigationCompose = "2.9.0"
 # Room database
 roomDb = "2.7.1"
 
+# Datastore
+datastorePreferences = "1.1.7"
+
 # Ksp
 ksp = "2.1.21-2.0.1"
 
@@ -124,6 +127,13 @@ google-dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compil
 androidx-room-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "roomDb" }
 androidx-room-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomDb" }
 androidx-room-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomDb" }
+
+# =====================================================
+# Datastore
+# =====================================================
+
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferences" }
 
 # =====================================================
 # Testing

@@ -42,19 +42,18 @@ class CompanyOverviewViewModel @Inject constructor(
             val companyOverviewResult = companyOverviewDeferred.await()
             val monthlyStockResult = monthlyStockDeferred.await()
 
-            val processedChartData = monthlyStockResult
-                .takeIf { it is ApiResponse.Success }
-                ?.let { (it as ApiResponse.Success<MonthlyStock>).data }
-                ?.let { processChartData(it.monthlyTimeSeries) }
+            val monthlyStockData = (monthlyStockResult as? ApiResponse.Success)?.data
+            val monthlyTimeSeries = monthlyStockData?.monthlyTimeSeries
 
-            val currentPrice = monthlyStockResult.takeIf { it is ApiResponse.Success }
-                ?.let { (it as ApiResponse.Success<MonthlyStock>).data }
-                ?.let {
-                    it.monthlyTimeSeries.maxByOrNull { LocalDate.parse(it.key) }
-                    ?.value?.close
-                    ?.toDoubleOrNull()
-                    ?.let { "$${String.format("%.2f", it)}" }
-                }
+            val processedChartData = monthlyTimeSeries
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { processChartData(it) }
+
+            val currentPrice = monthlyTimeSeries
+                ?.maxByOrNull { LocalDate.parse(it.key) }
+                ?.value?.close
+                ?.toDoubleOrNull()
+                ?.let { "$${String.format("%.2f", it)}" }
 
             // Update UI state with both results
             _uiState.update {
@@ -113,7 +112,7 @@ class CompanyOverviewViewModel @Inject constructor(
             var localStock = dao.getStocks().first { it.symbol == stock.symbol }.apply {
                 isStarred = newStarredState
             }
-            dao.updateStarredStock(stock.symbol, newStarredState)
+            dao.updateStarredStock(stock.symbol, stock.currentPrice, stock.percentageChanges, newStarredState)
 
             _uiState.update { state ->
                 state.copy(
@@ -125,7 +124,7 @@ class CompanyOverviewViewModel @Inject constructor(
     }
 
     fun updateStock(symbol: String, name: String, isStarred: Boolean) {
-        val stock = Stock(symbol, name, isStarred)
+        val stock = Stock(symbol = symbol, name = name, isStarred = isStarred)
         _uiState.update { it.copy(stock = stock) }
     }
 

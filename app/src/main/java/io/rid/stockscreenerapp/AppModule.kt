@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package io.rid.stockscreenerapp
 
 import android.content.Context
@@ -10,7 +12,7 @@ import dagger.hilt.components.SingletonComponent
 import io.rid.stockscreenerapp.api.ApiService
 import io.rid.stockscreenerapp.api.ApiServiceBuilder
 import io.rid.stockscreenerapp.api.Repository
-import io.rid.stockscreenerapp.database.Dao
+import io.rid.stockscreenerapp.dataStore.PrefsStore
 import io.rid.stockscreenerapp.database.Database
 import io.rid.stockscreenerapp.network.NetworkMonitor
 import javax.inject.Singleton
@@ -27,15 +29,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(apiService: ApiService, networkMonitor: NetworkMonitor): Repository {
-        return Repository(apiService, networkMonitor)
-    }
+    fun provideRepository(apiService: ApiService, networkMonitor: NetworkMonitor) = Repository(apiService, networkMonitor)
 
     @Provides
     @Singleton
-    fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor {
-        return NetworkMonitor(context)
-    }
+    fun provideNetworkMonitor(@ApplicationContext context: Context) = NetworkMonitor(context)
 
     @Provides
     @Singleton
@@ -46,8 +44,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDao(database: Database): Dao {
-        return database.dao()
-    }
+    fun provideDao(database: Database) = database.dao()
+
+    @Singleton
+    @Provides
+    fun providePrefsStore(@ApplicationContext context: Context) = PrefsStore(context)
 
 }
