@@ -75,7 +75,7 @@ private fun WatchlistItem(
                     top.linkTo(parent.top)
                     width = Dimension.fillToConstraints
                 }
-                .padding(start = Spacing.spacing8, end = Spacing.spacing4, top = Spacing.spacing8),
+                .padding(start = Spacing.spacing16, end = Spacing.spacing4, top = Spacing.spacing8),
             style = MaterialTheme.typography.titleMedium,
         )
 
@@ -88,7 +88,7 @@ private fun WatchlistItem(
                     top.linkTo(txtSymbol.bottom)
                     width = Dimension.fillToConstraints
                 }
-                .padding(start = Spacing.spacing8, end = Spacing.spacing4, bottom = Spacing.spacing8),
+                .padding(start = Spacing.spacing16, end = Spacing.spacing4, bottom = Spacing.spacing8),
             style = MaterialTheme.typography.bodyMedium,
         )
 
@@ -112,7 +112,7 @@ private fun WatchlistItem(
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 }
-                .padding(start = Spacing.spacing8, end = Spacing.spacing4, bottom = Spacing.spacing8),
+                .padding(start = Spacing.spacing8, end = Spacing.spacing16, bottom = Spacing.spacing8),
             style = MaterialTheme.typography.headlineSmall.copy(txtColor),
         )
     }

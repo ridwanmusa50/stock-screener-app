@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -113,7 +114,6 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val currentState = _uiState.value
 
-            // If query is empty, show all original stocks
             if (query.isEmpty()) {
                 _uiState.update {
                     it.copy(filteredStocks = it.originalStocks, err = null)
@@ -121,27 +121,26 @@ class DashboardViewModel @Inject constructor(
                 return@launch
             }
 
-            // First try to filter from remote
             when (val result = repository.filterStocks(query)) {
                 is ApiResponse.Success -> {
                     val remoteFilteredStocks = result.data.filteredResults
+                    val originalStockMap = currentState.originalStocks.associateBy { it.symbol }
 
-                    val filteredStocks = if (remoteFilteredStocks != null && remoteFilteredStocks.isNotEmpty()) {
-                        remoteFilteredStocks.map { remoteFilteredStock ->
-                            val localStock = currentState.originalStocks.firstOrNull {
-                                it.symbol == remoteFilteredStock.symbol
-                            }
-                            Stock(
-                                symbol = remoteFilteredStock.symbol,
-                                name = remoteFilteredStock.name,
-                                isStarred = localStock?.isStarred == true
-                            )
-                        }.sortedBy { it.symbol }
-                    } else {
-                        // Fallback to local filtering if remote fails or returns empty
-                        currentState.originalStocks.filter {
-                            it.symbol.contains(query, ignoreCase = true)
-                        }.sortedBy { it.symbol }
+                    val filteredStocks = withContext(Dispatchers.Default) {
+                        if (!remoteFilteredStocks.isNullOrEmpty()) {
+                            remoteFilteredStocks.map { remote ->
+                                val local = originalStockMap[remote.symbol]
+                                Stock(
+                                    symbol = remote.symbol,
+                                    name = remote.name,
+                                    isStarred = local?.isStarred == true
+                                )
+                            }.sortedBy { it.symbol }
+                        } else {
+                            currentState.originalStocks
+                                .filter { it.symbol.contains(query, ignoreCase = true) }
+                                .sortedBy { it.symbol }
+                        }
                     }
 
                     _uiState.update {
@@ -150,17 +149,17 @@ class DashboardViewModel @Inject constructor(
                 }
 
                 is ApiResponse.Err -> {
-                    // Fallback to local filtering if remote fails
-                    val filteredStocks = currentState.originalStocks.filter {
-                        it.symbol.contains(query, ignoreCase = true) ||
-                                it.name.contains(query, ignoreCase = true)
-                    }.sortedBy { it.symbol }
+                    val filteredStocks = withContext(Dispatchers.Default) {
+                        currentState.originalStocks
+                            .filter {
+                                it.symbol.contains(query, ignoreCase = true) ||
+                                        it.name.contains(query, ignoreCase = true)
+                            }
+                            .sortedBy { it.symbol }
+                    }
 
                     _uiState.update {
-                        it.copy(
-                            filteredStocks = filteredStocks,
-                            err = result
-                        )
+                        it.copy(filteredStocks = filteredStocks, err = result)
                     }
                 }
             }
@@ -171,7 +170,7 @@ class DashboardViewModel @Inject constructor(
         val newStarredState = !stock.isStarred
 
         viewModelScope.launch(Dispatchers.IO) {
-            dao.updateStarredStock(stock.symbol, stock.currentPrice, stock.percentageChanges, newStarredState)
+            dao.updateStarredStockDetails(stock.symbol, stock.currentPrice, stock.percentageChanges, newStarredState)
 
             val updatedList = _uiState.value.originalStocks.map {
                 if (it.symbol == stock.symbol) it.copy(isStarred = newStarredState) else it
@@ -189,7 +188,7 @@ class DashboardViewModel @Inject constructor(
 
     fun onTabSelected(index: Int, pagerState: PagerState, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
-            _uiState.update { it.copy(isLoading = false, err = null) }
+            if (_uiState.value.isLoading) _uiState.update { it.copy(isLoading = false, err = null) }
             pagerState.animateScrollToPage(index)
         }
     }
@@ -229,6 +228,28 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    fun updateWatchlist(stockToUpdate: Pair<String, Boolean>) {
+        val symbol = stockToUpdate.first
+        val isStarred = stockToUpdate.second
+
+        viewModelScope.launch(Dispatchers.Main) {
+            _uiState.update { currentState ->
+                val updatedOriginalStocks = currentState.originalStocks.map { stock ->
+                    if (stock.symbol == symbol) stock.copy(isStarred = isStarred) else stock
+                }
+
+                val updatedFilteredStocks = currentState.filteredStocks.map { stock ->
+                    if (stock.symbol == symbol) stock.copy(isStarred = isStarred) else stock
+                }
+
+                currentState.copy(
+                    originalStocks = updatedOriginalStocks,
+                    filteredStocks = updatedFilteredStocks
+                )
+            }
+        }
+    }
+
     @SuppressLint("DefaultLocale")
     private fun getMonthlyStock(coroutineScope: CoroutineScope, stock: Stock) {
         coroutineScope.launch {
@@ -251,7 +272,7 @@ class DashboardViewModel @Inject constructor(
                             } else null
 
                             // Update DB
-                            dao.updateStarredStock(
+                            dao.updateStarredStockDetails(
                                 symbol = stock.symbol,
                                 currentPrice = currentPrice,
                                 percentageChanges = percentageChange,

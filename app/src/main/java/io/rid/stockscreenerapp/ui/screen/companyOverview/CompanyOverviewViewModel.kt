@@ -106,18 +106,18 @@ class CompanyOverviewViewModel @Inject constructor(
     }
 
     fun updateStockStar(stock: Stock) {
-        val newStarredState = !stock.isStarred
-
         viewModelScope.launch(Dispatchers.IO) {
-            var localStock = dao.getStocks().first { it.symbol == stock.symbol }.apply {
-                isStarred = newStarredState
-            }
-            dao.updateStarredStock(stock.symbol, stock.currentPrice, stock.percentageChanges, newStarredState)
+            var localStock = dao.getStocks()
+                .first { it.symbol == stock.symbol }
+                .apply {
+                    isStarred = stock.isStarred
+                }
+            dao.updateStarredStock(stock.symbol, stock.isStarred)
 
             _uiState.update { state ->
                 state.copy(
                     stock = localStock,
-                    lastStarredAction = if (newStarredState) StarredAction.STARRED else StarredAction.UNSTARRED
+                    lastStarredAction = if (stock.isStarred) StarredAction.STARRED else StarredAction.UNSTARRED
                 )
             }
         }

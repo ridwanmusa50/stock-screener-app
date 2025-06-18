@@ -45,9 +45,11 @@ fun AppNavHost() {
             }
 
             setupScreen<Screen.Dashboard> {
-                val isEditWatchlist = SafeNavigation.Nav.consume<Boolean>(navController, Const.NavigationKey.IS_EDIT_WATCHLIST)
+                val stockToUpdate = SafeNavigation.Nav.consume<Pair<String, Boolean>>(
+                    navController, Const.NavigationKey.STOCK_TO_UPDATE
+                )
 
-                DashboardScreen(isEditWatchlist = isEditWatchlist) { stock ->
+                DashboardScreen(stockToUpdate = stockToUpdate) { stock ->
                     navController.navigate(
                         Screen.StockOverview(
                             symbol = stock.symbol,
@@ -67,8 +69,10 @@ fun AppNavHost() {
                     symbol = symbol,
                     name = name,
                     isStarred = isStarred,
-                    onBackPreviousScreen = { isEditWatchlist ->
-                        SafeNavigation.Nav.set(navController, Const.NavigationKey.IS_EDIT_WATCHLIST, isEditWatchlist)
+                    onBackPreviousScreen = { stockToUpdate ->
+                        stockToUpdate?.let {
+                            SafeNavigation.Nav.set(navController, Const.NavigationKey.STOCK_TO_UPDATE, it)
+                        }
                         navController.popBackStack()
                     }
                 )

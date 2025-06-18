@@ -81,14 +81,14 @@ fun CompanyOverviewScreen(
     symbol: String,
     name: String,
     isStarred: Boolean,
-    onBackPreviousScreen: (Boolean) -> Unit,
+    onBackPreviousScreen: (Pair<String, Boolean>?) -> Unit,
     companyOverviewViewModel: CompanyOverviewViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
 
     val uiState by companyOverviewViewModel.uiState.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
-    var isEditWatchlist by remember { mutableStateOf(false) }
+    var stockToUpdate by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
 
     LaunchedEffect(Unit) {
         companyOverviewViewModel.initialize(symbol)
@@ -117,10 +117,13 @@ fun CompanyOverviewScreen(
     ) {
         CompanyOverviewContent(
             uiState = uiState,
-            onCloseClick = { onBackPreviousScreen(isEditWatchlist) },
+            onCloseClick = {
+                onBackPreviousScreen(stockToUpdate)
+            },
             onStockStarred = { stock ->
+                stock.isStarred = !stock.isStarred
                 companyOverviewViewModel.updateStockStar(stock)
-                isEditWatchlist = true
+                stockToUpdate = Pair(stock.symbol, stock.isStarred)
             }
         )
     }
@@ -499,7 +502,7 @@ private fun CompanyDetailsSection(
         DetailItem(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = Spacing.spacing12),
+                .padding(vertical = Spacing.spacing12, horizontal = Spacing.spacing8),
             value = netAssetsTxt,
             label = R.string.stock_inception_date
         )
@@ -521,13 +524,17 @@ private fun DetailRow(
             .padding(vertical = Spacing.spacing12),
     ) {
         DetailItem(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = Spacing.spacing8, end = Spacing.spacing4),
             value = leftValue?.let { formatLeftValue(it) } ?: stringResource(R.string.general_not_available),
             label = leftLabel
         )
 
         DetailItem(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = Spacing.spacing4, end = Spacing.spacing8),
             value = rightValue?.let { formatRightValue(it) } ?: stringResource(R.string.general_not_available),
             label = rightLabel
         )
@@ -547,12 +554,16 @@ private fun DetailItem(
     ) {
         AppTxt(
             txt = value,
-            style = MaterialTheme.typography.titleMedium.copy(black01100)
+            style = MaterialTheme.typography.titleMedium.copy(
+               color = black01100, textAlign = TextAlign.Center
+            )
         )
 
         AppTxt(
             txtResId = label,
-            style = MaterialTheme.typography.bodyMedium.copy(gray01100)
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = gray01100, textAlign = TextAlign.Center
+            )
         )
     }
 }

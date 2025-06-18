@@ -22,7 +22,7 @@ object Const {
     }
 
     object NavigationKey {
-        const val IS_EDIT_WATCHLIST = "IS_EDIT_WATCHLIST"
+        const val STOCK_TO_UPDATE = "STOCK_TO_UPDATE"
     }
 
 }

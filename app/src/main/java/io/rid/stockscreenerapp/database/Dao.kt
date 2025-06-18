@@ -17,6 +17,9 @@ interface Dao {
 
     @Query("UPDATE stock SET currentPrice = :currentPrice, percentageChanges = :percentageChanges, " +
             "isStarred = :isStarred WHERE symbol = :symbol")
-    suspend fun updateStarredStock(symbol: String, currentPrice: String?, percentageChanges: String?, isStarred: Boolean)
+    suspend fun updateStarredStockDetails(symbol: String, currentPrice: String?, percentageChanges: String?, isStarred: Boolean)
+
+    @Query("UPDATE stock SET isStarred = :isStarred WHERE symbol = :symbol")
+    suspend fun updateStarredStock(symbol: String, isStarred: Boolean)
 
 }

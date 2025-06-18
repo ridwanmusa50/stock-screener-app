@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -97,7 +98,7 @@ private fun SearchBar(query: String, onQueryChanged: (String) -> Unit) {
         value = query,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Spacing.spacing4),
+            .padding(horizontal = Spacing.spacing12),
         focusedContainerColor = Color.Transparent,
         unFocusedContainerColor = Color.Transparent,
         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -118,6 +119,8 @@ private fun StockList(
     onStockSelected: (Stock) -> Unit,
     onStockStarred: (Stock) -> Unit
 ) {
+    val stocks by rememberUpdatedState(uiState.filteredStocks)
+
     PullToRefreshBox(
         modifier = Modifier.fillMaxSize(),
         state = rememberPullToRefreshState(),
@@ -125,8 +128,8 @@ private fun StockList(
         onRefresh = onRefresh
     ) {
         LazyColumn {
-            items(count = uiState.filteredStocks.size) { index ->
-                val stock = uiState.filteredStocks[index]
+            items(count = stocks.size) { index ->
+                val stock = stocks[index]
                 StockMarketItem(stock = stock, onStockSelected = onStockSelected, onStockStarred = onStockStarred)
             }
         }
@@ -159,7 +162,7 @@ private fun StockMarketItem(
                     top.linkTo(parent.top)
                     width = Dimension.fillToConstraints
                 }
-                .padding(start = Spacing.spacing8, end = Spacing.spacing4, top = Spacing.spacing8),
+                .padding(start = Spacing.spacing16, end = Spacing.spacing4, top = Spacing.spacing8),
             style = MaterialTheme.typography.titleMedium,
         )
 
@@ -173,7 +176,7 @@ private fun StockMarketItem(
                     width = Dimension.fillToConstraints
                 }
                 .padding(
-                    start = Spacing.spacing8,
+                    start = Spacing.spacing16,
                     end = Spacing.spacing4,
                     bottom = Spacing.spacing8
                 ),
@@ -187,7 +190,8 @@ private fun StockMarketItem(
                     end.linkTo(parent.end)
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
-                },
+                }
+                .padding(end = Spacing.spacing12),
             imageModifier = Modifier.size(Dimen.Size.icStar),
             contentScale = ContentScale.Fit,
             onClick = { onStockStarred(stock) }

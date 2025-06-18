@@ -51,7 +51,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DashboardScreen(
-    isEditWatchlist: Boolean? = null,
+    stockToUpdate: Pair<String, Boolean>? = null,
     dashboardViewModel: DashboardViewModel = hiltViewModel(),
     onStockSelected: (Stock) -> Unit
 ) {
@@ -71,8 +71,8 @@ fun DashboardScreen(
             .collect { focusManager.clearFocus(force = true) }
     }
 
-    LaunchedEffect(isEditWatchlist) {
-        if (isEditWatchlist == true) dashboardViewModel.fetchStocks()
+    LaunchedEffect(stockToUpdate) {
+        if (stockToUpdate != null) dashboardViewModel.updateWatchlist(stockToUpdate)
     }
 
     // Show SnackBar when a stock is starred/unstarred
@@ -95,8 +95,8 @@ fun DashboardScreen(
             onSearch = dashboardViewModel::filterStocks,
             onRefresh = dashboardViewModel::fetchStocks,
             onStockSelected = onStockSelected,
-            onStockStarred = { stock -> dashboardViewModel.updateStockStar(stock) },
-            onGetMonthlyDifference = { stocks -> dashboardViewModel.getMonthlyStock(stocks) }
+            onStockStarred = dashboardViewModel::updateStockStar,
+            onGetMonthlyDifference = dashboardViewModel::getMonthlyStock
         )
     }
 }
